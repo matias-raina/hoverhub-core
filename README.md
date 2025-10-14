@@ -79,10 +79,13 @@ A futuro se podrán incluir nuevas funciones, como chat interno, pasarela de pag
 ## Tecnologías
 
 - **Backend:** Python
-- **Base de datos:** PostgreSQL  
-- **Frontend:** 
-- **Control de versiones:** Git y GitHub  
-- **Arquitectura:** 
+- **Base de datos:** PostgreSQL
+- **Frontend:** NextJS
+- **Control de versiones:** Git y GitHub
+- **Arquitectura:**
+  - **General:** Arquitectura cliente-servidor
+  - **Backend:** Arquitectura en capas
+  - **Frontend:** Renderizado del lado del servidor
 
 ---
 
@@ -92,5 +95,3 @@ A futuro se podrán incluir nuevas funciones, como chat interno, pasarela de pag
 **Semanas 3 - 4:** implementación de roles y publicación de servicios  
 **Semanas 5 - 6:** listado y búsqueda de servicios  
 **Semanas 7 - 8:** contacto básico, pruebas y demo final
-
-
