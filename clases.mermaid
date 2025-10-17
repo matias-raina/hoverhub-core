@@ -1,0 +1,189 @@
+---
+title: HoverHub - Diagrama de Clases
+---
+classDiagram
+direction TB
+
+%% ===== ENUMS =====
+class UserRole {
+  <<enumeration>>
+  + CLIENT
+  + PROVIDER
+  + ADMIN
+}
+
+class UserStatus {
+  <<enumeration>>
+  + ACTIVE
+  + BANNED
+  + INACTIVE
+}
+
+class OfferStatus {
+  <<enumeration>>
+  + ACTIVE
+  + PAUSED
+  + FINISHED
+}
+
+class ApplicationStatus {
+  <<enumeration>>
+  + PENDING
+  + ACCEPTED
+  + REJECTED
+  + WITHDRAWN
+}
+
+class NotificationType {
+  <<enumeration>>
+  + MESSAGE
+  + ALERT
+  + REMINDER
+}
+
+%% ===== CORE USER DOMAIN =====
+class User {
+  <<interface>>
+  + id: int
+  + name: str
+  + email: str
+  - password_hash: str
+  # status: UserStatus
+  + login()
+  + logout()
+}
+
+class Client {
+  + payment_info: str
+  + post_offer()
+  + review_provider()
+}
+
+class Provider {
+  + drone_license: str
+  + portfolio: List[WorkExample]
+  + verify_license()
+  + add_portfolio_item(item: WorkExample)
+}
+
+class Admin {
+  + ban_user(user: User)
+  + review_reports()
+}
+
+User <|.. Client
+User <|.. Provider
+User <|.. Admin
+
+%% ===== SERVICE / OFFER DOMAIN =====
+class ServiceOffer {
+  + id: int
+  + title: str
+  + description: str
+  + category: str
+  + location: Location
+  # status: OfferStatus
+  + activate()
+  + pause()
+  + finish()
+}
+
+Client --> "*" ServiceOffer : publishes >
+
+%% ===== APPLICATION DOMAIN =====
+class Application {
+  + id: int
+  + offer: ServiceOffer
+  + applicant: Provider
+  # status: ApplicationStatus
+  + submit()
+  + withdraw()
+  + update_status(new_status: ApplicationStatus)
+}
+
+Application --> Provider
+Application --> ServiceOffer
+
+%% ===== NOTIFICATIONS =====
+class Notification {
+  + id: int
+  + type: NotificationType
+  + sender: User
+  + receiver: User
+  + message: str
+  # status: NotificationStatus
+  + mark_as_read()
+}
+
+Notification --> User : sender/receiver
+
+%% ===== CONTROLLERS / DECORATORS =====
+class Controller {
+  <<interface>>
+  + handle_request(request)
+}
+
+class UserController {
+  + create_user(data)
+  + get_user(id)
+  + update_user(id, data)
+}
+
+class OfferController {
+  + create_offer(data)
+  + get_offers()
+  + update_offer(id, data)
+}
+
+class ApplicationController {
+  + apply_to_offer(offer_id, provider_id)
+  + withdraw_application(id)
+}
+
+class NotificationController {
+  + send_notification(sender, receiver, message)
+  + get_notifications(user_id)
+}
+
+Controller <|.. UserController
+Controller <|.. OfferController
+Controller <|.. ApplicationController
+Controller <|.. NotificationController
+
+class AuthDecorator {
+  - controller: Controller
+  + handle_request(request)
+}
+
+AuthDecorator --> Controller
+
+%% ===== FACTORY =====
+class UserFactory {
+  + create_user(role: UserRole, data: dict) : User
+}
+
+UserFactory --> UserRole
+UserFactory --> User
+
+%% ===== UTIL / SUPPORT CLASSES =====
+class Location {
+  + latitude: float
+  + longitude: float
+  + city: str
+  + country: str
+}
+
+class WorkExample {
+  + title: str
+  + description: str
+  + date: datetime
+  + media_url: str
+}
+
+Provider --> WorkExample
+ServiceOffer --> Location
+
+%% ===== RELATIONS =====
+User --> Notification : receives
+Provider --> Application : submits
+Application --> Notification : triggers
