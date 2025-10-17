@@ -27,10 +27,10 @@ def test_update_job():
 def test_delete_job():
     response = client.delete("/jobs/1")
     assert response.status_code == 204
-    assert response.content == b""  # No content expected on successful delete
+    assert response.content == b""
 
 
 def test_get_jobs():
     response = client.get("/jobs")
     assert response.status_code == 200
-    assert isinstance(response.json(), list)  # Expecting a list of jobs
+    assert isinstance(response.json(), list)

@@ -8,10 +8,8 @@ from src.api.routes.favorites import FavoriteRouter
 from src.config.database import engine
 from src.models import user, job, application, favorite
 
-# Create the FastAPI app
 app = FastAPI()
 
-# Configure CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -20,7 +18,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Include API routers
 app.include_router(AuthRouter().router, prefix="/auth", tags=["auth"])
 app.include_router(UserRouter().router, prefix="/users", tags=["users"])
 app.include_router(JobRouter().router, prefix="/jobs", tags=["jobs"])
@@ -28,8 +25,6 @@ app.include_router(ApplicationRouter().router,
                    prefix="/applications", tags=["applications"])
 app.include_router(FavoriteRouter().router,
                    prefix="/favorites", tags=["favorites"])
-
-# Create the database tables
 
 
 @app.on_event("startup")
@@ -40,7 +35,6 @@ def startup_event():
     favorite.Base.metadata.create_all(bind=engine)
 
 
-# Main entry point
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)

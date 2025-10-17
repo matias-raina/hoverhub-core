@@ -20,7 +20,7 @@ class AuthService:
 
     def verify_password(self, plain_password, hashed_password):
         """Verifies a plain password against a hashed password."""
-        return hashed_password == plain_password  # Replace with a proper hash comparison in production
+        return hashed_password == plain_password
 
     def register_user(self, username, email, password):
         """Registers a new user and returns the created user."""
@@ -29,4 +29,4 @@ class AuthService:
 
     def hash_password(self, password):
         """Hashes the password for storage."""
-        return password  # Replace with a proper hashing function in production
+        return password

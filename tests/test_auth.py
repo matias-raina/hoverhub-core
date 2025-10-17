@@ -38,7 +38,7 @@ def test_login_user_invalid_credentials():
 def test_register_user_existing_email():
     user_data = {
         "username": "anotheruser",
-        "email": "testuser@example.com",  # Using existing email
+        "email": "testuser@example.com",
         "password": "securepassword"
     }
     response = client.post("/auth/register", json=user_data)

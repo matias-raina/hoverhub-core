@@ -1,7 +1,7 @@
 class FavoriteRepository(BaseRepository):
     def __init__(self, db_session):
         super().__init__(db_session)
-        self.model = Favorite  # Assuming Favorite is the model defined in models/favorite.py
+        self.model = Favorite
 
     def add_favorite(self, user_id: int, job_id: int) -> Favorite:
         new_favorite = self.model(user_id=user_id, job_id=job_id)

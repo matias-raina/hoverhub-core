@@ -20,21 +20,21 @@ def test_get_favorites():
 def test_add_favorite_invalid_job():
     favorite_data = {"job_id": 999, "user_id": 1}
     response = client.post("/favorites", json=favorite_data)
-    assert response.status_code == 404  # Assuming job_id 999 does not exist
+    assert response.status_code == 404
 
 
 def test_get_favorites_no_user():
     response = client.get("/favorites?user_id=999")
-    assert response.status_code == 404  # Assuming user_id 999 does not exist
+    assert response.status_code == 404
 
 
 def test_remove_favorite():
     favorite_data = {"job_id": 1, "user_id": 1}
     response = client.delete("/favorites", json=favorite_data)
-    assert response.status_code == 204  # Assuming successful deletion
+    assert response.status_code == 204
 
 
 def test_remove_favorite_not_found():
     favorite_data = {"job_id": 999, "user_id": 1}
     response = client.delete("/favorites", json=favorite_data)
-    assert response.status_code == 404  # Assuming favorite does not exist
+    assert response.status_code == 404
