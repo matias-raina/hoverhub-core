@@ -7,15 +7,13 @@ class AuthRouter:
     def __init__(self):
         self.router = APIRouter()
         self.auth_service = AuthService()
-        self.setup_routes()
 
-    def setup_routes(self):
-        self.router.post(
-            "/login", response_model=UserResponse)(self.login_user)
-        self.router.post(
-            "/logout", response_model=UserResponse)(self.logout_user)
-        self.router.post(
-            "/register", response_model=UserResponse)(self.register_user)
+        self.router.add_api_route(
+            "/login", self.login_user, methods=["POST"], response_model=UserResponse)
+        self.router.add_api_route(
+            "/logout", self.logout_user, methods=["POST"], response_model=UserResponse)
+        self.router.add_api_route(
+            "/register", self.register_user, methods=["POST"], response_model=UserResponse)
 
     async def login_user(self, username: str, password: str):
         user = await self.auth_service.authenticate_user(username, password)
