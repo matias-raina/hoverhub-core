@@ -7,15 +7,15 @@ direction TB
 %% ===== ENUMS =====
 class UserRole {
   <<enumeration>>
-  + CLIENT
-  + PROVIDER
+  + CONTRACTOR
+  + PILOT
   + ADMIN
 }
 
-class UserStatus {
+class AccountStatus {
   <<enumeration>>
   + ACTIVE
-  + BANNED
+  + SUSPENDED
   + INACTIVE
 }
 
@@ -48,32 +48,39 @@ class User {
   + name: str
   + email: str
   - password_hash: str
-  # status: UserStatus
   + login()
   + logout()
 }
 
-class Client {
-  + payment_info: str
-  + post_offer()
-  + review_provider()
+class Account {
+  + id: int
+  + role: UserRole
+  + user: User
+  # status: AccountStatus
 }
 
-class Provider {
+class ContractorAccount {
+  + payment_info: str
+  + post_job()
+  + review_operator()
+}
+
+class PilotAccount {
   + drone_license: str
   + portfolio: List[WorkExample]
   + verify_license()
   + add_portfolio_item(item: WorkExample)
 }
 
-class Admin {
+class AdminAccount {
   + ban_user(user: User)
   + review_reports()
 }
 
-User <|.. Client
-User <|.. Provider
-User <|.. Admin
+User --> "*" Account
+Account <|-- ContractorAccount
+Account <|-- PilotAccount
+Account <|-- AdminAccount
 
 %% ===== SERVICE / OFFER DOMAIN =====
 class ServiceOffer {
@@ -88,20 +95,20 @@ class ServiceOffer {
   + finish()
 }
 
-Client --> "*" ServiceOffer : publishes >
+ContractorAccount --> "*" ServiceOffer : posts >
 
 %% ===== APPLICATION DOMAIN =====
 class Application {
   + id: int
   + offer: ServiceOffer
-  + applicant: Provider
+  + applicant: PilotAccount
   # status: ApplicationStatus
   + submit()
   + withdraw()
   + update_status(new_status: ApplicationStatus)
 }
 
-Application --> Provider
+Application --> PilotAccount
 Application --> ServiceOffer
 
 %% ===== NOTIFICATIONS =====
@@ -111,7 +118,6 @@ class Notification {
   + sender: User
   + receiver: User
   + message: str
-  # status: NotificationStatus
   + mark_as_read()
 }
 
@@ -136,7 +142,7 @@ class OfferController {
 }
 
 class ApplicationController {
-  + apply_to_offer(offer_id, provider_id)
+  + apply_to_offer(offer_id, operator_id)
   + withdraw_application(id)
 }
 
@@ -166,10 +172,11 @@ AuthDecorator --> Controller
 
 %% ===== FACTORY =====
 class UserFactory {
-  + create_user(role: UserRole, data: dict) : User
+  + create_account(role: UserRole, user: User, data: dict) : Account
 }
 
 UserFactory --> UserRole
+UserFactory --> Account
 UserFactory --> User
 
 %% ===== UTIL / SUPPORT CLASSES =====
@@ -187,10 +194,10 @@ class WorkExample {
   + media_url: str
 }
 
-Provider --> WorkExample
+PilotAccount --> WorkExample
 ServiceOffer --> Location
 
 %% ===== RELATIONS =====
 User --> Notification : receives
-Provider --> Application : submits
+PilotAccount --> Application : submits
 Application --> Notification : triggers
