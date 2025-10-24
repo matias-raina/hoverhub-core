@@ -1,20 +1,23 @@
-from sqlalchemy import Column, Integer, String
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import Column, Integer, String, BigInteger
 from sqlalchemy.orm import relationship
+from src.config.database import Base
 
-Base = declarative_base()
 
 class User(Base):
     __tablename__ = 'users'
 
-    id = Column(Integer, primary_key=True, index=True)
-    username = Column(String, unique=True, index=True)
-    email = Column(String, unique=True, index=True)
-    password = Column(String)
+    id = Column(BigInteger, primary_key=True, index=True)
+    firstname = Column(String, nullable=False)
+    lastname = Column(String, nullable=False)
+    username = Column(String, unique=True, nullable=False, index=True)
+    email = Column(String, unique=True, nullable=False, index=True)
+    password = Column(String, nullable=False)
 
-    jobs = relationship("Job", back_populates="owner")
-    applications = relationship("Application", back_populates="user")
-    favorites = relationship("Favorite", back_populates="user")
+    # Relationships
+    accounts = relationship(
+        "Account", back_populates="user", cascade="all, delete-orphan")
+    notifications = relationship(
+        "Notification", back_populates="recipient_user", foreign_keys="Notification.recipient_user_id")
 
     def __repr__(self):
         return f"<User(id={self.id}, username={self.username}, email={self.email})>"

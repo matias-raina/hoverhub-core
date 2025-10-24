@@ -1,33 +1,46 @@
-class ApplicationRepository:
-    def __init__(self, db_session):
-        self.db_session = db_session
+from sqlalchemy.orm import Session
+from typing import Optional, List
+from src.models.application import Application
+from src.repositories.base_repository import BaseRepository
 
-    def submit_application(self, application_data):
+
+class ApplicationRepository(BaseRepository):
+    def __init__(self, db_session: Session):
+        super().__init__(db_session)
+        self.model = Application
+
+    def get_application_by_id(self, application_id: int) -> Optional[Application]:
+        return self.get(self.model, application_id)
+
+    def get_applications_by_account_id(self, account_id: int) -> List[Application]:
+        return self.db_session.query(self.model).filter(self.model.account_id == account_id).all()
+
+    def get_applications_by_job_id(self, job_id: int) -> List[Application]:
+        return self.db_session.query(self.model).filter(self.model.job_id == job_id).all()
+
+    def submit_application(self, application_data: dict) -> Application:
         new_application = Application(**application_data)
-        self.db_session.add(new_application)
-        self.db_session.commit()
-        self.db_session.refresh(new_application)
-        return new_application
+        return self.add(new_application)
 
-    def get_applications(self, user_id):
-        return self.db_session.query(Application).filter(Application.user_id == user_id).all()
-
-    def get_application_by_id(self, application_id):
-        return self.db_session.query(Application).filter(Application.id == application_id).first()
-
-    def delete_application(self, application_id):
-        application = self.get_application_by_id(application_id)
-        if application:
-            self.db_session.delete(application)
-            self.db_session.commit()
-            return True
-        return False
-
-    def update_application(self, application_id, updated_data):
+    def update_application(self, application_id: int, updated_data: dict) -> Optional[Application]:
         application = self.get_application_by_id(application_id)
         if application:
             for key, value in updated_data.items():
-                setattr(application, key, value)
+                if hasattr(application, key):
+                    setattr(application, key, value)
             self.db_session.commit()
             return application
         return None
+
+    def delete_application(self, application_id: int) -> bool:
+        application = self.get_application_by_id(application_id)
+        if application:
+            self.delete(application)
+            return True
+        return False
+
+    def application_exists(self, job_id: int, account_id: int) -> bool:
+        return self.db_session.query(self.model).filter(
+            self.model.job_id == job_id,
+            self.model.account_id == account_id
+        ).count() > 0
