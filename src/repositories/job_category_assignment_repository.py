@@ -18,7 +18,8 @@ class JobCategoryAssignmentRepository(BaseRepository):
         ).all()
 
     def create_assignment(self, job_id: int, job_category_id: int) -> JobCategoryAssignment:
-        assignment = JobCategoryAssignment(job_id=job_id, job_category_id=job_category_id)
+        assignment = JobCategoryAssignment(
+            job_id=job_id, job_category_id=job_category_id)
         return self.add(assignment)
 
     def delete_assignment(self, job_id: int, job_category_id: int) -> bool:

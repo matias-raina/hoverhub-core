@@ -41,11 +41,13 @@ class DronerProfileRepository(BaseRepository):
 
     def search_profiles(self, filters: dict) -> List[DronerProfile]:
         query = self.db_session.query(self.model)
-        
+
         if filters.get('min_experience'):
-            query = query.filter(self.model.experience_years >= filters['min_experience'])
-        
+            query = query.filter(
+                self.model.experience_years >= filters['min_experience'])
+
         if filters.get('display_name'):
-            query = query.filter(self.model.display_name.ilike(f"%{filters['display_name']}%"))
-        
+            query = query.filter(self.model.display_name.ilike(
+                f"%{filters['display_name']}%"))
+
         return query.all()

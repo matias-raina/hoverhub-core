@@ -41,14 +41,15 @@ class JobRepository(BaseRepository):
 
     def search_jobs(self, filters: dict) -> List[Job]:
         query = self.db_session.query(self.model)
-        
+
         if filters.get('location'):
-            query = query.filter(self.model.location.ilike(f"%{filters['location']}%"))
-        
+            query = query.filter(self.model.location.ilike(
+                f"%{filters['location']}%"))
+
         if filters.get('min_budget'):
             query = query.filter(self.model.budget >= filters['min_budget'])
-        
+
         if filters.get('max_budget'):
             query = query.filter(self.model.budget <= filters['max_budget'])
-        
+
         return query.all()

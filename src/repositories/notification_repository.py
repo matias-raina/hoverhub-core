@@ -13,7 +13,8 @@ class NotificationRepository(BaseRepository):
         return self.get(self.model, notification_id)
 
     def get_notifications_by_user_id(self, user_id: int, unread_only: bool = False) -> List[Notification]:
-        query = self.db_session.query(self.model).filter(self.model.recipient_user_id == user_id)
+        query = self.db_session.query(self.model).filter(
+            self.model.recipient_user_id == user_id)
         if unread_only:
             query = query.filter(self.model.read_at.is_(None))
         return query.order_by(self.model.created_at.desc()).all()
