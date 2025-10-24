@@ -1,0 +1,174 @@
+---
+title: HoverHub Database ER Diagram
+config:
+  layout: elk
+---
+erDiagram
+    direction LR
+
+    User {
+        int id PK
+        string firstname
+        string lastname
+        string username UK
+        string email UK
+        string password
+    }
+
+    AccountType {
+        int id PK
+        string name
+    }
+
+    AccountStatusType {
+        int id PK
+        string name
+    }
+
+    Account {
+        int id PK
+        int user_id FK
+        int account_type_id FK
+        int account_status_type_id FK
+        datetime created_at
+    }
+
+    DronerProfile {
+        int id PK
+        int account_id FK
+        string display_name
+        string bio
+        int experience_years
+    }
+
+    License {
+        int id PK
+        int droner_profile_id FK
+        int license_type_id FK
+        date expiration_date
+    }
+
+    LicenseType {
+        int id PK
+        string name
+        string description
+    }
+
+    PortfolioItem {
+        int id PK
+        int droner_profile_id FK
+        string title
+        string media_url
+        string description
+    }
+
+    JobPosterProfile {
+        int id PK
+        int account_id FK
+        string company
+        string contact_name
+        string contact_email
+    }
+
+    Job {
+        int id PK
+        int account_id FK
+        string title
+        string description
+        decimal budget
+        string location
+        date start_date
+        date end_date
+    }
+
+    JobRequirement {
+        int id PK
+        int job_id FK
+        int job_requirement_type_id FK
+        string value
+    }
+
+    JobRequirementType {
+        int id PK
+        string name
+        string description
+    }
+
+    JobCategory {
+        int id PK
+        string name
+    }
+
+    JobCategoryAssignment {
+        int job_id PK, FK
+        int job_category_id PK, FK
+    }
+
+    Application {
+        int id PK
+        int job_id FK
+        int account_id FK
+        string status
+        string message
+        datetime submitted_at
+    }
+
+    Favorite {
+        int id PK
+        int job_id FK
+        int account_id FK
+        datetime created_at
+    }
+
+    Notification {
+        int id PK
+        int recipient_user_id FK
+        int actor_account_id FK
+        int notification_type_id FK
+        int job_id FK
+        int application_id FK
+        string message
+        datetime created_at
+        datetime read_at
+    }
+
+    NotificationType {
+        int id PK
+        string name
+        string channel
+    }
+
+    JobAlertSubscription {
+        int id PK
+        int droner_account_id FK
+        int job_category_id FK
+        int job_poster_account_id FK
+        boolean is_active
+        datetime created_at
+    }
+
+    User ||--o{ Account : "owns"
+    AccountType ||--o{ Account : "categorizes"
+    AccountStatusType ||--o{ Account : "defines status"
+    Account ||--o| DronerProfile : "has droner profile"
+    Account ||--o| JobPosterProfile : "has poster profile"
+    DronerProfile ||--o{ License : "holds"
+    LicenseType ||--o{ License : "classifies"
+    DronerProfile ||--o{ PortfolioItem : "showcases"
+    Account ||--o{ Job : "posts"
+    Job ||--o{ JobRequirement : "specifies"
+    JobRequirementType ||--o{ JobRequirement : "categorizes"
+    Job ||--o{ Application : "receives"
+    Account ||--o{ Application : "submits"
+    Account ||--o{ Favorite : "bookmarks"
+    Job ||--o{ Favorite : "appears in"
+    Job ||--o{ JobCategoryAssignment : "tagged"
+    JobCategory ||--o{ JobCategoryAssignment : "groups"
+    User ||--o{ Notification : "receives"
+    Account }o..o{ Notification : "triggers"
+    NotificationType ||--o{ Notification : "categorizes"
+    Notification }o..|| Application : "references application"
+    Notification }o..|| Job : "references job"
+    Account ||--o{ JobAlertSubscription : "configures"
+    JobCategory }o..o{ JobAlertSubscription : "filters"
+    JobAlertSubscription }o..|| Account : "targets poster account"
