@@ -1,12 +1,16 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from src.schemas.user import UserCreate, UserResponse
 from src.services.auth_service import AuthService
+from src.repositories.user_repository import UserRepository
+from src.utils.jwt_handler import JWTHandler
+from src.config.database import get_db
 
 
 class AuthRouter:
     def __init__(self):
         self.router = APIRouter()
-        self.auth_service = AuthService()
+        self.auth_service = AuthService(
+            UserRepository(Depends(get_db)), JWTHandler())
 
         self.router.add_api_route(
             "/login", self.login_user, methods=["POST"], response_model=UserResponse)

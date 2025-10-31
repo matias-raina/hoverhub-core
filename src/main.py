@@ -1,12 +1,12 @@
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-from src.api.routes.auth import AuthRouter
-from src.api.routes.users import UserRouter
-from src.api.routes.jobs import JobRouter
-from src.api.routes.applications import ApplicationRouter
-from src.api.routes.favorites import FavoriteRouter
-from src.config.database import engine
 from src.models import user, job, application, favorite
+from src.config.database import engine
+from src.api.routes.favorites import FavoriteRouter
+from src.api.routes.applications import ApplicationRouter
+from src.api.routes.jobs import JobRouter
+from src.api.routes.users import UserRouter
+from src.api.routes.auth import AuthRouter
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi import FastAPI
 
 app = FastAPI()
 
@@ -27,12 +27,12 @@ app.include_router(FavoriteRouter().router,
                    prefix="/favorites", tags=["favorites"])
 
 
-@app.on_event("startup")
-def startup_event():
-    user.Base.metadata.create_all(bind=engine)
-    job.Base.metadata.create_all(bind=engine)
-    application.Base.metadata.create_all(bind=engine)
-    favorite.Base.metadata.create_all(bind=engine)
+# @app.on_event("startup")
+# def startup_event():
+#     user.Base.metadata.create_all(bind=engine)
+#     job.Base.metadata.create_all(bind=engine)
+#     application.Base.metadata.create_all(bind=engine)
+#     favorite.Base.metadata.create_all(bind=engine)
 
 
 if __name__ == "__main__":

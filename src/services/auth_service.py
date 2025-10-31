@@ -1,3 +1,6 @@
+from http.client import HTTPException
+
+
 class AuthService:
     def __init__(self, user_repository, jwt_handler):
         self.user_repository = user_repository
@@ -30,3 +33,10 @@ class AuthService:
     def hash_password(self, password):
         """Hashes the password for storage."""
         return password
+
+    def get_token_from_header(self, authorization_header: str) -> str:
+        """Extracts the token from the Authorization header."""
+        if authorization_header and authorization_header.startswith("Bearer "):
+            return authorization_header.split(" ")[1]
+        raise HTTPException(
+            status_code=401, detail="Invalid authorization header")

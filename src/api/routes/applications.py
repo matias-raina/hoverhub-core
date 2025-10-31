@@ -1,13 +1,16 @@
+from src.config.database import get_db
 from fastapi import APIRouter, Depends, HTTPException
 from src.schemas.application import ApplicationCreate, ApplicationResponse
 from src.services.application_service import ApplicationService
 from src.api.dependencies import get_current_user
+from src.repositories.application_repository import ApplicationRepository
 
 
 class ApplicationRouter:
     def __init__(self):
         self.router = APIRouter()
-        self.application_service = ApplicationService()
+        self.application_service = ApplicationService(
+            ApplicationRepository(Depends(get_db)))
 
         self.router.add_api_route(
             "/", self.submit_application, methods=["POST"], response_model=ApplicationResponse)

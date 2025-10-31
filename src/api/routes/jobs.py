@@ -3,16 +3,22 @@ from sqlalchemy.orm import Session
 from src.schemas.job import JobCreate, JobResponse
 from src.services.job_service import JobService
 from src.config.database import get_db
+from src.repositories.job_repository import JobRepository
+
 
 class JobRouter:
     def __init__(self):
         self.router = APIRouter()
-        self.job_service = JobService()
+        self.job_service = JobService(JobRepository(Depends(get_db)))
 
-        self.router.add_api_route("/jobs", self.create_job, methods=["POST"], response_model=JobResponse)
-        self.router.add_api_route("/jobs/{job_id}", self.get_job, methods=["GET"], response_model=JobResponse)
-        self.router.add_api_route("/jobs/{job_id}", self.update_job, methods=["PUT"], response_model=JobResponse)
-        self.router.add_api_route("/jobs/{job_id}", self.delete_job, methods=["DELETE"])
+        self.router.add_api_route(
+            "/jobs", self.create_job, methods=["POST"], response_model=JobResponse)
+        self.router.add_api_route(
+            "/jobs/{job_id}", self.get_job, methods=["GET"], response_model=JobResponse)
+        self.router.add_api_route(
+            "/jobs/{job_id}", self.update_job, methods=["PUT"], response_model=JobResponse)
+        self.router.add_api_route(
+            "/jobs/{job_id}", self.delete_job, methods=["DELETE"])
 
     async def create_job(self, job: JobCreate, db: Session = Depends(get_db)):
         return await self.job_service.create_job(job, db)
@@ -34,5 +40,6 @@ class JobRouter:
         if not success:
             raise HTTPException(status_code=404, detail="Job not found")
         return {"detail": "Job deleted successfully"}
+
 
 job_router = JobRouter().router
