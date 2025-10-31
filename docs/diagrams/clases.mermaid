@@ -1,203 +1,246 @@
 ---
-title: HoverHub - Diagrama de Clases
+title: HoverHub - Class Diagram (Based on Database Schema)
+config:
+  layout: elk
 ---
 classDiagram
 direction TB
 
-%% ===== ENUMS =====
-class UserRole {
-  <<enumeration>>
-  + CONTRACTOR
-  + PILOT
-  + ADMIN
-}
-
-class AccountStatus {
-  <<enumeration>>
-  + ACTIVE
-  + SUSPENDED
-  + INACTIVE
-}
-
-class OfferStatus {
-  <<enumeration>>
-  + ACTIVE
-  + PAUSED
-  + FINISHED
-}
-
-class ApplicationStatus {
-  <<enumeration>>
-  + PENDING
-  + ACCEPTED
-  + REJECTED
-  + WITHDRAWN
-}
-
-class NotificationType {
-  <<enumeration>>
-  + MESSAGE
-  + ALERT
-  + REMINDER
-}
-
-%% ===== CORE USER DOMAIN =====
+%% ===== CORE USER AND ACCOUNT CLASSES =====
 class User {
-  <<interface>>
   + id: int
-  + name: str
-  + email: str
-  - password_hash: str
-  + login()
-  + logout()
+  + firstname: string
+  + lastname: string
+  + username: string
+  + email: string
+  - password: string
+  + getFullName() string
+  + authenticate(password: string) bool
+}
+
+class AccountType {
+  + id: int
+  + name: string
+  + getDescription() string
+}
+
+class AccountStatusType {
+  + id: int
+  + name: string
+  + isActive() bool
 }
 
 class Account {
   + id: int
-  + role: UserRole
-  + user: User
-  # status: AccountStatus
+  + user_id: int
+  + account_type_id: int
+  + account_status_type_id: int
+  + created_at: datetime
+  + getUser() User
+  + getAccountType() AccountType
+  + getStatus() AccountStatusType
+  + isActive() bool
 }
 
-class ContractorAccount {
-  + payment_info: str
-  + post_job()
-  + review_operator()
-}
-
-class PilotAccount {
-  + drone_license: str
-  + portfolio: List[WorkExample]
-  + verify_license()
-  + add_portfolio_item(item: WorkExample)
-}
-
-class AdminAccount {
-  + ban_user(user: User)
-  + review_reports()
-}
-
-User --> "*" Account
-Account <|-- ContractorAccount
-Account <|-- PilotAccount
-Account <|-- AdminAccount
-
-%% ===== SERVICE / OFFER DOMAIN =====
-class ServiceOffer {
+%% ===== DRONER PROFILE CLASSES =====
+class DronerProfile {
   + id: int
-  + title: str
-  + description: str
-  + category: str
-  + location: Location
-  # status: OfferStatus
-  + activate()
-  + pause()
-  + finish()
+  + account_id: int
+  + display_name: string
+  + bio: string
+  + experience_years: int
+  + getAccount() Account
+  + getLicenses() List~License~
+  + getPortfolio() List~PortfolioItem~
+  + addPortfolioItem(item: PortfolioItem) void
 }
 
-ContractorAccount --> "*" ServiceOffer : posts >
+class License {
+  + id: int
+  + droner_profile_id: int
+  + license_type_id: int
+  + expiration_date: date
+  + getDronerProfile() DronerProfile
+  + getLicenseType() LicenseType
+  + isExpired() bool
+  + isValid() bool
+}
 
-%% ===== APPLICATION DOMAIN =====
+class LicenseType {
+  + id: int
+  + name: string
+  + description: string
+  + getRequirements() string
+}
+
+class PortfolioItem {
+  + id: int
+  + droner_profile_id: int
+  + title: string
+  + media_url: string
+  + description: string
+  + getDronerProfile() DronerProfile
+  + getMediaUrl() string
+}
+
+%% ===== JOB POSTER PROFILE CLASS =====
+class JobPosterProfile {
+  + id: int
+  + account_id: int
+  + company: string
+  + contact_name: string
+  + contact_email: string
+  + getAccount() Account
+  + getPostedJobs() List~Job~
+}
+
+%% ===== JOB CLASSES =====
+class Job {
+  + id: int
+  + account_id: int
+  + title: string
+  + description: string
+  + budget: decimal
+  + location: string
+  + start_date: date
+  + end_date: date
+  + getAccount() Account
+  + getRequirements() List~JobRequirement~
+  + getCategories() List~JobCategory~
+  + getApplications() List~Application~
+  + isActive() bool
+  + getDuration() int
+}
+
+class JobRequirement {
+  + id: int
+  + job_id: int
+  + job_requirement_type_id: int
+  + value: string
+  + getJob() Job
+  + getRequirementType() JobRequirementType
+}
+
+class JobRequirementType {
+  + id: int
+  + name: string
+  + description: string
+  + validate(value: string) bool
+}
+
+class JobCategory {
+  + id: int
+  + name: string
+  + getJobs() List~Job~
+  + getSubscribers() List~JobAlertSubscription~
+}
+
+class JobCategoryAssignment {
+  + job_id: int
+  + job_category_id: int
+  + getJob() Job
+  + getCategory() JobCategory
+}
+
+%% ===== APPLICATION CLASS =====
 class Application {
   + id: int
-  + offer: ServiceOffer
-  + applicant: PilotAccount
-  # status: ApplicationStatus
-  + submit()
-  + withdraw()
-  + update_status(new_status: ApplicationStatus)
+  + job_id: int
+  + account_id: int
+  + status: string
+  + message: string
+  + submitted_at: datetime
+  + getJob() Job
+  + getAccount() Account
+  + updateStatus(newStatus: string) void
+  + withdraw() void
+  + accept() void
+  + reject() void
 }
 
-Application --> PilotAccount
-Application --> ServiceOffer
+%% ===== FAVORITE CLASS =====
+class Favorite {
+  + id: int
+  + job_id: int
+  + account_id: int
+  + created_at: datetime
+  + getJob() Job
+  + getAccount() Account
+  + remove() void
+}
 
-%% ===== NOTIFICATIONS =====
+%% ===== NOTIFICATION CLASSES =====
 class Notification {
   + id: int
-  + type: NotificationType
-  + sender: User
-  + receiver: User
-  + message: str
-  + mark_as_read()
+  + recipient_user_id: int
+  + actor_account_id: int
+  + notification_type_id: int
+  + job_id: int
+  + application_id: int
+  + message: string
+  + created_at: datetime
+  + read_at: datetime
+  + getRecipient() User
+  + getActor() Account
+  + getType() NotificationType
+  + markAsRead() void
+  + isRead() bool
 }
 
-Notification --> User : sender/receiver
-
-%% ===== CONTROLLERS / DECORATORS =====
-class Controller {
-  <<interface>>
-  + handle_request(request)
+class NotificationType {
+  + id: int
+  + name: string
+  + channel: string
+  + getNotifications() List~Notification~
 }
 
-class UserController {
-  + get_profile(user_id)
-  + update_profile(user_id, data)
-  + change_password(user_id, current, new)
+%% ===== JOB ALERT SUBSCRIPTION CLASS =====
+class JobAlertSubscription {
+  + id: int
+  + droner_account_id: int
+  + job_category_id: int
+  + job_poster_account_id: int
+  + is_active: bool
+  + created_at: datetime
+  + getDronerAccount() Account
+  + getJobCategory() JobCategory
+  + getJobPosterAccount() Account
+  + activate() void
+  + deactivate() void
+  + matchesJob(job: Job) bool
 }
 
-class OfferController {
-  + create_offer(data)
-  + get_offers()
-  + update_offer(id, data)
-}
+%% ===== RELATIONSHIPS =====
+User "1" --> "0..*" Account : owns
+AccountType "1" --> "0..*" Account : categorizes
+AccountStatusType "1" --> "0..*" Account : defines status
 
-class ApplicationController {
-  + apply_to_offer(offer_id, operator_id)
-  + withdraw_application(id)
-}
+Account "1" --> "0..1" DronerProfile : has droner profile
+Account "1" --> "0..1" JobPosterProfile : has poster profile
 
-class NotificationController {
-  + send_notification(sender, receiver, message)
-  + get_notifications(user_id)
-}
+DronerProfile "1" --> "0..*" License : holds
+LicenseType "1" --> "0..*" License : classifies
+DronerProfile "1" --> "0..*" PortfolioItem : showcases
 
-class AuthController {
-  + login(email, password)
-  + register(user_data, role)
-  + logout(token)
-}
+Account "1" --> "0..*" Job : posts
+Job "1" --> "0..*" JobRequirement : specifies
+JobRequirementType "1" --> "0..*" JobRequirement : categorizes
 
-Controller <|.. UserController
-Controller <|.. OfferController
-Controller <|.. ApplicationController
-Controller <|.. NotificationController
-Controller <|.. AuthController
+Job "1" --> "0..*" Application : receives
+Account "1" --> "0..*" Application : submits
 
-class AuthDecorator {
-  - controller: Controller
-  + handle_request(request)
-}
+Account "1" --> "0..*" Favorite : bookmarks
+Job "1" --> "0..*" Favorite : appears in
 
-AuthDecorator --> Controller
+Job "1" --> "0..*" JobCategoryAssignment : tagged
+JobCategory "1" --> "0..*" JobCategoryAssignment : groups
 
-%% ===== FACTORY =====
-class UserFactory {
-  + create_account(role: UserRole, user: User, data: dict) : Account
-}
+User "1" --> "0..*" Notification : receives
+Account "0..*" --> "0..*" Notification : triggers
+NotificationType "1" --> "0..*" Notification : categorizes
+Notification "0..*" --> "0..1" Application : references application
+Notification "0..*" --> "0..1" Job : references job
 
-UserFactory --> UserRole
-UserFactory --> Account
-UserFactory --> User
-
-%% ===== UTIL / SUPPORT CLASSES =====
-class Location {
-  + latitude: float
-  + longitude: float
-  + city: str
-  + country: str
-}
-
-class WorkExample {
-  + title: str
-  + description: str
-  + date: datetime
-  + media_url: str
-}
-
-PilotAccount --> WorkExample
-ServiceOffer --> Location
-
-%% ===== RELATIONS =====
-User --> Notification : receives
-PilotAccount --> Application : submits
-Application --> Notification : triggers
+Account "1" --> "0..*" JobAlertSubscription : configures
+JobCategory "0..*" --> "0..*" JobAlertSubscription : filters
+JobAlertSubscription "0..*" --> "0..1" Account : targets poster account
