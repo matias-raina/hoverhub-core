@@ -1,6 +1,6 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/compose-spec/compose-spec/master/schema/compose-spec.json
 
-name: hoverhub-core
+name: hoverhub
 
 services:
   postgres:
@@ -10,13 +10,13 @@ services:
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-hoverhub}
-      POSTGRES_DB: ${POSTGRES_DB:-hoverhub-core}
+      POSTGRES_DB: ${POSTGRES_DB:-hoverhub}
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
-      - hoverhub-core-network
+      - hoverhub-network
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 10s
@@ -25,7 +25,7 @@ services:
       start_period: 10s
 
 networks:
-  hoverhub-core-network:
+  hoverhub-network:
     driver: bridge
 
 volumes:
