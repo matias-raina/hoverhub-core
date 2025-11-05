@@ -34,7 +34,11 @@ class UserService:
         # validate full payload for creation
         self.validate_user_data(user_data, partial=False)
         user_data['password'] = self.hash_password(user_data['password'])
-        return self.user_repository.create_user(user_data)
+        created = self.user_repository.create_user(user_data)
+        try:
+            return self._serialize_user(created)
+        except Exception:
+            return created
 
     def update_user(self, user_id: str, **kwargs):
         """Update user information."""
@@ -45,7 +49,11 @@ class UserService:
             user.email = kwargs["email"]
 
         user.updated_at = datetime.now(timezone.utc)
-        return self.user_repository.update(user)
+        updated = self.user_repository.update(user)
+        try:
+            return self._serialize_user(updated)
+        except Exception:
+            return updated
 
     def get_profile(self, current_user):
         """Return sanitized profile for current_user.
@@ -260,8 +268,17 @@ class UserService:
         return self.user_repository.delete_user(user_id)
 
     def hash_password(self, password: str) -> str:
-        import hashlib
-        return hashlib.sha256(password.encode()).hexdigest()
+        # Use bcrypt for password hashing (safer than plain sha256)
+        import bcrypt
+        hashed = bcrypt.hashpw(password.encode(), bcrypt.gensalt())
+        return hashed.decode()
+
+    def verify_password(self, password: str, hashed: str) -> bool:
+        import bcrypt
+        try:
+            return bcrypt.checkpw(password.encode(), hashed.encode())
+        except Exception:
+            return False
 
     def validate_user_data(self, user_data: Dict[str, Any], partial: bool = False):
         """
@@ -288,7 +305,7 @@ class UserService:
         if not user:
             return None
         # model returned by repository likely is SQLAlchemy model
-        if self.hash_password(password) != getattr(user, 'password'):
+        if not self.verify_password(password, getattr(user, 'password')):
             return None
 
         payload = {
@@ -321,14 +338,18 @@ class UserService:
 
         user = self._get_user_or_404(user_id=user_id)
         # compare against model attribute
-        if self.hash_password(current_password) != getattr(user, 'password'):
+        if not self.verify_password(current_password, getattr(user, 'password')):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Current password incorrect"
             )
 
         new_hashed = self.hash_password(new_password)
-        return self.user_repository.update_user(user_id, {'password': new_hashed})
+        updated = self.user_repository.update_user(user_id, {'password': new_hashed})
+        try:
+            return self._serialize_user(updated)
+        except Exception:
+            return updated
 
     def is_email_available(self, email: str) -> bool:
         # check repository directly to avoid raising 404
