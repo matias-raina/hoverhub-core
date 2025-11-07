@@ -92,7 +92,7 @@ def get_current_user(
             headers={"WWW-Authenticate": "Bearer"},
         ) from exc
 
-    user_id: str = payload.get("sub")
+    user_id = payload.get("sub")
 
     user = user_repository.get_by_id(user_id)
     if user is None:
