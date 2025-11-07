@@ -23,4 +23,7 @@ class Account(SQLModel, table=True):
 	account_type_id: int
 	account_status_type_id: int = Field(default=1)
 	created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-	updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+	updated_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc),
+        sa_column_kwargs={"onupdate": lambda: datetime.now(timezone.utc)}
+		)
