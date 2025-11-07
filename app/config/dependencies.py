@@ -10,11 +10,15 @@ from app.domain.models.user import User
 from app.domain.repositories.auth import AuthRepository
 from app.domain.repositories.interfaces.auth import IAuthRepository
 from app.domain.repositories.interfaces.user import IUserRepository
+from app.domain.repositories.interfaces.job import IJobRepository
 from app.domain.repositories.user import UserRepository
+from app.domain.repositories.job import JobRepository
 from app.services.auth import AuthService
 from app.services.interfaces.auth import IAuthService
 from app.services.interfaces.user import IUserService
+from app.services.interfaces.job import IJobService
 from app.services.user import UserService
+from app.services.job import JobService
 
 # HTTP Bearer scheme for token authentication
 http_bearer = HTTPBearer()
@@ -37,8 +41,15 @@ def get_auth_repository(
     return AuthRepository(settings)
 
 
+def get_job_repository(
+    session: SessionDep,
+) -> IJobRepository:
+    return JobRepository(session)
+
+
 UserRepositoryDep = Annotated[IUserRepository, Depends(get_user_repository)]
 AuthRepositoryDep = Annotated[IAuthRepository, Depends(get_auth_repository)]
+JobRepositoryDep = Annotated[IJobRepository, Depends(get_job_repository)]
 
 
 # Service dependencies
@@ -55,8 +66,15 @@ def get_user_service(
     return UserService(user_repository)
 
 
+def get_job_service(
+    job_repository: JobRepositoryDep,
+) -> IJobService:
+    return JobService(job_repository)
+
+
 AuthServiceDep = Annotated[IAuthService, Depends(get_auth_service)]
 UserServiceDep = Annotated[IUserService, Depends(get_user_service)]
+JobServiceDep = Annotated[IJobService, Depends(get_job_service)]
 
 
 # Authentication dependency - Gets current user from JWT token
