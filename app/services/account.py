@@ -2,6 +2,8 @@ from datetime import datetime
 from typing import List, Optional
 
 from app.domain.models.user import User
+from app.domain.models.account import Account
+
 from app.services.interfaces.account import IAccountService
 from app.domain.repositories.user import IUserRepository
 from app.domain.repositories.account import IAccountRepository
@@ -15,7 +17,7 @@ class AccountService(IAccountService):
         self.account_repository = account_repository
         self.user_repository = user_repository
 
-    def create_account(self, user_id: int, account_type_id: int) -> dict:
+    def create_account(self, user_id: int, account_type_id: int) -> Account:
         """Crea una nueva cuenta para un usuario existente."""
         user = self._get_user_or_404(user_id=user_id)
 
@@ -28,29 +30,22 @@ class AccountService(IAccountService):
 
         return self.account_repository.save(account)
 
-    def deactivate_account(self, account_id: int):
-        """Marca una cuenta como inactiva."""
-        account = self.account_repository.get_by_id(account_id)
-        if not account:
-            raise ValueError("Account not found")
 
-        account["account_status_type_id"] = 2  # p.ej., 'inactive'
-        self.account_repository.update(account)
-        return account
-
-    def get_accounts_by_user(self, user_id: int) -> List[dict]:
+    def get_accounts_by_user(self, user_id: int) -> List[Account]:
         """Obtiene todas las cuentas asociadas a un usuario."""
         return self.account_repository.find_by_user(user_id)
 
-    def change_account_status(self, account_id: int, new_status_id: int):
+    def change_account_status(self, account_id: int, new_status_id: int) -> Account:
         """Actualiza el estado de una cuenta."""
-        account = self.account_repository.get_by_id(account_id)
-        if not account:
-            raise ValueError("Account not found")
+        account = self._get_account_or_404(account_id=account_id)
 
         account["account_status_type_id"] = new_status_id
         self.account_repository.update(account)
         return account
+    
+    def deactivate_account(self, account_id: int) -> Account:
+        """Marca una cuenta como inactiva."""
+        return self.change_account_status(account_id, new_status_id=2)  # p.ej., 'inactive'
 
     def user_has_account_type(self, user_id: int, account_type_id: int) -> bool:
         """Verifica si el usuario ya posee una cuenta de cierto tipo."""
@@ -62,14 +57,21 @@ class AccountService(IAccountService):
         account = self.account_repository.get_by_id(account_id)
         return account and account["account_status_type_id"] == 1
 
-    def remove_account(self, account_id: int):
+    def remove_account(self, account_id: int) -> bool:
         """Elimina una cuenta del sistema."""
-        account = self.account_repository.get_by_id(account_id)
-        if not account:
-            raise ValueError("Account not found")
+        account = self._get_account_or_404(account_id=account_id)
+        
         self.account_repository.delete(account_id)
         return True
     
     def _get_user_or_404(self, user_id: Optional[int] = None, email: Optional[str] = None) -> User:
         from app.utils.helpers import get_user_or_404
         return get_user_or_404(user_repository=self.user_repository, user_id=user_id, email=email)
+    
+    def _get_account_or_404(self, account_id: Optional[int] = None, email: Optional[str] = None) -> Account:
+        from app.utils.helpers import get_account_or_404
+        return get_account_or_404(
+            account_repository=self.account_repository, 
+            account_id=account_id, 
+            email=email
+        )
