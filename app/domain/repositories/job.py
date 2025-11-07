@@ -22,8 +22,7 @@ class JobRepository(IJobRepository):
 
     def read_jobs(self, offset: int = 0, limit: int = Query(default=100, le=100)) -> list[Job]:
         """Retrieve all job entries."""
-        jobs = self.session.exec(select(Job).offset(offset).limit(limit)).all()
-        return jobs
+        return self.session.exec(select(Job).offset(offset).limit(limit)).all()
 
     def update(self, job_id: str, job: JobUpdate) -> Job:
         """Update an existing job entry."""

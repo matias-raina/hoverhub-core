@@ -21,8 +21,7 @@ async def create_job(
     Returns:
         The created job information
     """
-    job = job_service.create_job(job_data)
-    return job
+    return job_service.create_job(job_data)
 
 
 @router.get("/{job_id}", status_code=status.HTTP_200_OK)
@@ -40,8 +39,7 @@ async def get_job(
     Returns:
         Job information
     """
-    job = job_service.read_job(job_id)
-    return job
+    return job_service.read_job(job_id)
 
 
 @router.get("/", status_code=status.HTTP_200_OK)
@@ -61,8 +59,7 @@ async def list_jobs(
     Returns:
         A list of jobs
     """
-    jobs = job_service.read_jobs(offset=offset, limit=limit)
-    return jobs
+    return job_service.read_jobs(offset=offset, limit=limit)
 
 
 @router.put("/{job_id}", status_code=status.HTTP_200_OK)
@@ -82,8 +79,7 @@ async def update_job(
     Returns:
         The updated job information
     """
-    updated_job = job_service.update_job(job_id, job_data)
-    return updated_job
+    return job_service.update_job(job_id, job_data)
 
 
 @router.delete("/{job_id}", status_code=status.HTTP_204_NO_CONTENT)
