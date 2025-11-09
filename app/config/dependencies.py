@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlmodel import Session
 
@@ -9,16 +9,16 @@ from app.config.settings import Settings, get_settings
 from app.domain.models.user import User
 from app.domain.repositories.auth import AuthRepository
 from app.domain.repositories.interfaces.auth import IAuthRepository
-from app.domain.repositories.interfaces.user import IUserRepository
 from app.domain.repositories.interfaces.job import IJobRepository
-from app.domain.repositories.user import UserRepository
+from app.domain.repositories.interfaces.user import IUserRepository
 from app.domain.repositories.job import JobRepository
+from app.domain.repositories.user import UserRepository
 from app.services.auth import AuthService
 from app.services.interfaces.auth import IAuthService
-from app.services.interfaces.user import IUserService
 from app.services.interfaces.job import IJobService
-from app.services.user import UserService
+from app.services.interfaces.user import IUserService
 from app.services.job import JobService
+from app.services.user import UserService
 
 # HTTP Bearer scheme for token authentication
 http_bearer = HTTPBearer()
@@ -77,56 +77,12 @@ UserServiceDep = Annotated[IUserService, Depends(get_user_service)]
 JobServiceDep = Annotated[IJobService, Depends(get_job_service)]
 
 
-# Authentication dependency - Gets current user from JWT token
-def get_current_user(
+# Authentication dependency - Gets authenticated user from JWT token
+def get_authenticated_user(
     credentials: Annotated[HTTPAuthorizationCredentials, Depends(http_bearer)],
-    auth_repository: AuthRepositoryDep,
-    user_repository: UserRepositoryDep,
+    auth_service: AuthServiceDep,
 ) -> User:
-    """
-    Extract and validate JWT token using HTTPBearer, return current user.
-
-    The token is automatically extracted from the Authorization header by FastAPI.
-    Expects header: Authorization: Bearer <token>
-
-    Args:
-        credentials: HTTP Bearer credentials containing the JWT token
-        auth_repository: Authentication repository for token validation
-        user_repository: User repository to fetch user data
-
-    Returns:
-        Current authenticated user
-
-    Raises:
-        HTTPException: If token is invalid or user not found
-    """
-    # Verify token and extract payload (now with better error handling)
-    try:
-        payload = auth_repository.verify_token(credentials.credentials)
-    except Exception as exc:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid token",
-            headers={"WWW-Authenticate": "Bearer"},
-        ) from exc
-
-    user_id = payload.get("sub")
-
-    user = user_repository.get_by_id(user_id)
-    if user is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="User not found",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-
-    if not user.is_active:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Inactive user account",
-        )
-
-    return user
+    return auth_service.get_authenticated_user(credentials.credentials)
 
 
-CurrentUserDep = Annotated[User, Depends(get_current_user)]
+AuthenticatedUserDep = Annotated[User, Depends(get_authenticated_user)]

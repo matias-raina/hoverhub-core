@@ -19,5 +19,9 @@ class IAuthService(ABC):
         pass
 
     @abstractmethod
+    def get_authenticated_user(self, token: str) -> User:
+        pass
+
+    @abstractmethod
     def signout(self):
         pass
