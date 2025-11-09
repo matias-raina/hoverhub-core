@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import Optional
+from uuid import UUID
 
 from app.domain.models.user import User
 
@@ -14,7 +15,7 @@ class IUserRepository(ABC):
         """Retrieve a user by email."""
 
     @abstractmethod
-    def get_by_id(self, user_id: str) -> Optional[User]:
+    def get_by_id(self, user_id: UUID) -> Optional[User]:
         """Retrieve a user by ID."""
 
     @abstractmethod
@@ -22,5 +23,5 @@ class IUserRepository(ABC):
         """Update an existing user."""
 
     @abstractmethod
-    def delete(self, user_id: str) -> bool:
+    def delete(self, user_id: UUID) -> bool:
         """Delete a user by ID."""

@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from fastapi import APIRouter, HTTPException, status
 
 from app.config.dependencies import AuthenticatedUserDep, UserServiceDep
@@ -17,7 +19,7 @@ async def get_current_user(authenticated_user: AuthenticatedUserDep):
 
 @router.get("/{user_id}", status_code=status.HTTP_200_OK)
 async def get_user(
-    user_id: str,
+    user_id: UUID,
     _authenticated_user: AuthenticatedUserDep,
     user_service: UserServiceDep,
 ):
@@ -43,7 +45,7 @@ async def get_user(
 
 @router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_user(
-    user_id: str,
+    user_id: UUID,
     authenticated_user: AuthenticatedUserDep,
     user_service: UserServiceDep,
 ):
