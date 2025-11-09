@@ -1,15 +1,15 @@
+import uuid
+from datetime import date, datetime
 from typing import Optional
 
-import uuid
-from datetime import date, datetime, timezone
-
 from sqlmodel import Field, SQLModel
+
+from app.domain.models.fields import CreatedAtField, UpdatedAtField
 
 
 class Job(SQLModel, table=True):
 
-    id: uuid.UUID = Field(default_factory=uuid.uuid4,
-                          primary_key=True, index=True)
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True, index=True)
     account_id: uuid.UUID = Field(foreign_key="account.id", index=True)
     title: str
     description: str
@@ -17,11 +17,8 @@ class Job(SQLModel, table=True):
     location: str
     start_date: date
     end_date: date
-    created_at: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc))
-    updated_at: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc),
-        sa_column_kwargs={"onupdate": lambda: datetime.now(timezone.utc)})
+    created_at: datetime = CreatedAtField()
+    updated_at: datetime = UpdatedAtField()
 
 
 class JobUpdate(SQLModel):

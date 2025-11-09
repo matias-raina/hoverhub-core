@@ -1,30 +1,22 @@
+import enum
 import uuid
-from datetime import datetime, timezone
-from typing import Optional
+from datetime import datetime
 
-from sqlmodel import Field, SQLModel
+from sqlmodel import Column, Enum, Field, SQLModel
+
+from app.domain.models.fields import CreatedAtField, UpdatedAtField
+
+
+class AccountType(str, enum.Enum):
+    DRONER = "DRONER"
+    EMPLOYER = "EMPLOYER"
 
 
 class Account(SQLModel, table=True):
-    """Modelo de dominio para Account.
 
-    Campos:
-    - id: UUID primario
-    - user_id: FK hacia User.id
-    - email: opcional (útil si se busca por email desde repositorio/service)
-    - account_type_id: tipo de cuenta (int)
-    - account_status_type_id: estado de la cuenta (1=active por defecto)
-    - created_at, updated_at: timestamps UTC
-    """
-
-    id: uuid.UUID = Field(default_factory=uuid.uuid4,
-                          primary_key=True, index=True)
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True, index=True)
     user_id: uuid.UUID = Field(foreign_key="user.id", index=True)
-    account_type_id: int
-    account_status_type_id: int = Field(default=1)
-    created_at: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc))
-    updated_at: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc),
-        sa_column_kwargs={"onupdate": lambda: datetime.now(timezone.utc)}
-    )
+    account_type: AccountType = Field(sa_column=Column(Enum(AccountType)))
+    is_active: bool = Field(default=True)
+    created_at: datetime = CreatedAtField()
+    updated_at: datetime = UpdatedAtField()
