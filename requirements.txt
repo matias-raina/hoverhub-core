@@ -5,3 +5,4 @@ pyjwt
 sqlmodel
 pydantic_settings
 alembic
+alembic-postgresql-enum

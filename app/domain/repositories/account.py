@@ -1,4 +1,5 @@
 from typing import Optional
+from uuid import UUID
 
 from sqlmodel import Session, select
 
@@ -17,14 +18,14 @@ class AccountRepository(IAccountRepository):
         self.session.refresh(account)
         return account
 
-    def get_by_email(self, email: str) -> Optional[Account]:
-        """Retrieve an account by email."""
-        statement = select(Account).where(Account.email == email)
-        return self.session.exec(statement).first()
-
-    def get_by_id(self, account_id: str) -> Optional[Account]:
+    def get_by_id(self, account_id: UUID) -> Optional[Account]:
         """Retrieve an account by ID."""
         return self.session.get(Account, account_id)
+
+    def get_user_accounts(self, user_id: UUID) -> list[Account]:
+        """Retrieve all accounts for a specific user."""
+        statement = select(Account).where(Account.user_id == user_id)
+        return list(self.session.exec(statement).all())
 
     def get_all(self) -> list[Account]:
         """Retrieve all accounts."""
@@ -38,7 +39,7 @@ class AccountRepository(IAccountRepository):
         self.session.refresh(account)
         return account
 
-    def delete(self, account_id: str) -> bool:
+    def delete(self, account_id: UUID) -> bool:
         """Delete an account by ID."""
         account = self.get_by_id(account_id)
         if account:

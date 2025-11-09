@@ -1,6 +1,6 @@
 from fastapi import APIRouter, status
 
-from app.config.dependencies import AuthServiceDep, CurrentUserDep
+from app.config.dependencies import AuthenticatedUserDep, AuthServiceDep
 from app.dto.auth import SigninDTO, SignupDTO
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
@@ -63,22 +63,22 @@ async def signout():
 
 
 @router.get("/me")
-async def get_authenticated_user(current_user: CurrentUserDep):
+async def get_authenticated_user(authenticated_user: AuthenticatedUserDep):
     """
     Get currently authenticated user information.
 
     Requires a valid JWT token in the Authorization header.
 
     Args:
-        current_user: Current authenticated user (injected from JWT)
+        authenticated_user: Current authenticated user (injected from JWT)
 
     Returns:
         Current user information
     """
     return {
-        "id": str(current_user.id),
-        "email": current_user.email,
-        "is_active": current_user.is_active,
-        "created_at": current_user.created_at.isoformat(),
-        "updated_at": current_user.updated_at.isoformat(),
+        "id": str(authenticated_user.id),
+        "email": authenticated_user.email,
+        "is_active": authenticated_user.is_active,
+        "created_at": authenticated_user.created_at.isoformat(),
+        "updated_at": authenticated_user.updated_at.isoformat(),
     }

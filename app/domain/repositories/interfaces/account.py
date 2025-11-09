@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import Optional
+from uuid import UUID
 
 from app.domain.models.account import Account
 
@@ -10,12 +11,12 @@ class IAccountRepository(ABC):
         """Create a new account in the database."""
 
     @abstractmethod
-    def get_by_email(self, email: str) -> Optional[Account]:
-        """Retrieve an account by email."""
+    def get_by_id(self, account_id: UUID) -> Optional[Account]:
+        """Retrieve an account by ID."""
 
     @abstractmethod
-    def get_by_id(self, account_id: str) -> Optional[Account]:
-        """Retrieve an account by ID."""
+    def get_user_accounts(self, user_id: UUID) -> list[Account]:
+        """Retrieve all accounts for a specific user."""
 
     @abstractmethod
     def get_all(self) -> list[Account]:
@@ -26,5 +27,5 @@ class IAccountRepository(ABC):
         """Update an existing account."""
 
     @abstractmethod
-    def delete(self, account_id: str) -> bool:
+    def delete(self, account_id: UUID) -> bool:
         """Delete an account by ID."""

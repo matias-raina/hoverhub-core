@@ -1,33 +1,26 @@
+from uuid import UUID
+
 from fastapi import APIRouter, HTTPException, status
 
-from app.config.dependencies import CurrentUserDep, UserServiceDep
+from app.config.dependencies import AuthenticatedUserDep, UserServiceDep
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
 
 @router.get("/me", status_code=status.HTTP_200_OK)
-async def get_current_user(current_user: CurrentUserDep):
-    """
-    Get the currently authenticated user.
-
-    Args:
-        current_user: The authenticated user from JWT token
-
-    Returns:
-        Current user information
-    """
+async def get_current_user(authenticated_user: AuthenticatedUserDep):
     return {
-        "id": str(current_user.id),
-        "email": current_user.email,
-        "is_active": current_user.is_active,
-        "created_at": current_user.created_at.isoformat(),
+        "id": str(authenticated_user.id),
+        "email": authenticated_user.email,
+        "is_active": authenticated_user.is_active,
+        "created_at": authenticated_user.created_at.isoformat(),
     }
 
 
 @router.get("/{user_id}", status_code=status.HTTP_200_OK)
 async def get_user(
-    user_id: str,
-    _current_user: CurrentUserDep,
+    user_id: UUID,
+    _authenticated_user: AuthenticatedUserDep,
     user_service: UserServiceDep,
 ):
     """
@@ -35,7 +28,7 @@ async def get_user(
 
     Args:
         user_id: The ID of the user to retrieve
-        _current_user: The authenticated user (ensures auth is required)
+        _authenticated_user: The authenticated user (ensures auth is required)
         user_service: Injected user service
 
     Returns:
@@ -52,8 +45,8 @@ async def get_user(
 
 @router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_user(
-    user_id: str,
-    current_user: CurrentUserDep,
+    user_id: UUID,
+    authenticated_user: AuthenticatedUserDep,
     user_service: UserServiceDep,
 ):
     """
@@ -68,7 +61,7 @@ async def delete_user(
         No content
     """
     # Users can only delete their own account
-    if current_user.id != user_id:
+    if authenticated_user.id != user_id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You can only delete your own account",

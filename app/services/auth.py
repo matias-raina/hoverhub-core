@@ -15,7 +15,7 @@ class AuthService(IAuthService):
         self.auth_repository = auth_repository
         self.user_repository = user_repository
 
-    def signup(self, dto: SignupDTO):
+    def signup(self, dto: SignupDTO) -> User:
         """Register a new user."""
         hashed_password = self.auth_repository.hash_password(dto.password)
 
@@ -31,7 +31,7 @@ class AuthService(IAuthService):
 
         return user
 
-    def signin(self, dto: SigninDTO):
+    def signin(self, dto: SigninDTO) -> str:
         """Authenticate a user and return JWT access token."""
         user = self.user_repository.get_by_email(dto.email)
 
@@ -50,6 +50,43 @@ class AuthService(IAuthService):
     def authorize(self, token: str) -> dict:
         """Authorize a user by token."""
         return self.auth_repository.verify_token(token)
+
+    def get_authenticated_user(self, token: str) -> User:
+        try:
+            payload = self.authorize(token)
+        except Exception as exc:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid token",
+                headers={"WWW-Authenticate": "Bearer"},
+            ) from exc
+
+        # Extract user ID from token payload
+        user_id = payload.get("sub")
+        if not user_id:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid token payload",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+
+        # Fetch user from database
+        user = self.user_repository.get_by_id(user_id)
+        if user is None:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="User not found",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+
+        # Check if user account is active
+        if not user.is_active:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Inactive user account",
+            )
+
+        return user
 
     def signout(self):
         """Sign out a user."""

@@ -1,4 +1,5 @@
 from typing import Optional
+from uuid import UUID
 
 from sqlmodel import Session, select
 
@@ -22,7 +23,7 @@ class UserRepository(IUserRepository):
         statement = select(User).where(User.email == email)
         return self.session.exec(statement).first()
 
-    def get_by_id(self, user_id: str) -> Optional[User]:
+    def get_by_id(self, user_id: UUID) -> Optional[User]:
         """Retrieve a user by ID."""
         return self.session.get(User, user_id)
 
@@ -33,7 +34,7 @@ class UserRepository(IUserRepository):
         self.session.refresh(user)
         return user
 
-    def delete(self, user_id: str) -> bool:
+    def delete(self, user_id: UUID) -> bool:
         """Delete a user by ID."""
         user = self.get_by_id(user_id)
         if user:

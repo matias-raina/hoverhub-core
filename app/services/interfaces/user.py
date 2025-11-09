@@ -1,12 +1,13 @@
 from abc import ABC, abstractmethod
 from typing import Optional
+from uuid import UUID
 
 from app.domain.models.user import User
 
 
 class IUserService(ABC):
     @abstractmethod
-    def get_user_by_id(self, user_id: str) -> Optional[User]:
+    def get_user_by_id(self, user_id: UUID) -> Optional[User]:
         """Get a user by ID."""
 
     @abstractmethod
@@ -14,9 +15,9 @@ class IUserService(ABC):
         """Get a user by email."""
 
     @abstractmethod
-    def update_user(self, user_id: str, **kwargs) -> User:
+    def update_user(self, user_id: UUID, **kwargs) -> User:
         """Update user information."""
 
     @abstractmethod
-    def delete_user(self, user_id: str) -> bool:
+    def delete_user(self, user_id: UUID) -> bool:
         """Delete a user."""

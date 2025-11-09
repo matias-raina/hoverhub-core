@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 from typing import Optional
+from uuid import UUID
 
 from fastapi import HTTPException, status
 
@@ -12,7 +13,7 @@ class UserService(IUserService):
     def __init__(self, user_repository: IUserRepository):
         self.user_repository = user_repository
 
-    def get_user_by_id(self, user_id: str) -> Optional[User]:
+    def get_user_by_id(self, user_id: UUID) -> Optional[User]:
         """Get a user by ID."""
         user = self.user_repository.get_by_id(user_id)
         if not user:
@@ -32,7 +33,7 @@ class UserService(IUserService):
             )
         return user
 
-    def update_user(self, user_id: str, **kwargs) -> User:
+    def update_user(self, user_id: UUID, **kwargs) -> User:
         """Update user information."""
         user = self.user_repository.get_by_id(user_id)
         if not user:
@@ -48,7 +49,7 @@ class UserService(IUserService):
         user.updated_at = datetime.now(timezone.utc)
         return self.user_repository.update(user)
 
-    def delete_user(self, user_id: str) -> bool:
+    def delete_user(self, user_id: UUID) -> bool:
         """Delete a user."""
         success = self.user_repository.delete(user_id)
         if not success:
