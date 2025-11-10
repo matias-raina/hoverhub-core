@@ -1,6 +1,8 @@
 from abc import ABC, abstractmethod
 from typing import Tuple
+from uuid import UUID
 
+from app.domain.models.account import Account
 from app.domain.models.user import User
 from app.dto.auth import SigninDTO, SignupDTO
 
@@ -21,6 +23,10 @@ class IAuthService(ABC):
 
     @abstractmethod
     def get_authenticated_user(self, token: str) -> User:
+        pass
+
+    @abstractmethod
+    def get_authenticated_account(self, token: str, account_id: UUID) -> Account:
         pass
 
     @abstractmethod
