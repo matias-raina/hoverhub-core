@@ -4,11 +4,10 @@ from app.config.settings import get_settings
 
 settings = get_settings()
 
-url = f"postgresql://{settings.postgres_user}:{settings.postgres_password}@{settings.postgres_host}:{settings.postgres_port}/{settings.postgres_db}"
-
-engine = create_engine(url)
+engine = create_engine(settings.db_connection_string)
 
 
 def get_db():
+    """Get the database session."""
     with Session(engine) as db:
         yield db
