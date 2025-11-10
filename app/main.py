@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import ORJSONResponse
@@ -7,8 +9,6 @@ from app.routers import routers
 
 settings = get_settings()
 
-
-# Initialize FastAPI app
 app = FastAPI(
     title="HoverHub API",
     description="API for HoverHub - Drone Job Platform",
@@ -18,10 +18,10 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Configure this based on your environment
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
-    allow_headers=["*"],
+    allow_headers=["Content-Type", "Authorization"],
 )
 
 for router in routers:
@@ -31,10 +31,10 @@ for router in routers:
 @app.get("/health", tags=["Health"])
 async def health_check():
     """Health check endpoint."""
-    return {"status": "healthy", "app": settings.app_name}
+    return {"status": "healthy", "timestamp": datetime.now()}
 
 
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host=settings.host, port=settings.port)
