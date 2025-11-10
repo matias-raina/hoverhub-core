@@ -1,4 +1,6 @@
+import uuid
 from datetime import datetime, timedelta, timezone
+from typing import Tuple
 
 import jwt
 from pwdlib import PasswordHash
@@ -19,23 +21,48 @@ class AuthRepository(IAuthRepository):
     def hash_password(self, plain_password: str) -> str:
         return self.hasher.hash(plain_password)
 
-    def verify_token(self, token: str) -> dict:
+    def decode_token(self, token: str) -> dict:
         return jwt.decode(
             token, self.settings.secret_key, algorithms=[self.settings.algorithm]
         )
 
-    def create_token(self, data: dict) -> str:
-        return jwt.encode(
+    def create_token(
+        self, data: dict
+    ) -> Tuple[uuid.UUID, str, datetime, uuid.UUID, str, datetime]:
+        iat = datetime.now(timezone.utc)
+
+        access_token_jti = str(uuid.uuid4())
+        refresh_token_jti = str(uuid.uuid4())
+
+        access_token_exp = iat + timedelta(
+            minutes=self.settings.access_token_expire_minutes
+        )
+        refresh_token_exp = iat + timedelta(
+            minutes=self.settings.refresh_token_expire_minutes
+        )
+
+        access_token = jwt.encode(
             {
                 **data,
-                "exp": datetime.now(timezone.utc)
-                + timedelta(minutes=self.settings.access_token_expire_minutes),
+                "jti": access_token_jti,
+                "type": "access",
+                "iat": iat,
+                "exp": access_token_exp,
             },
             self.settings.secret_key,
             algorithm=self.settings.algorithm,
         )
 
-    def decode_token(self, token: str) -> dict:
-        return jwt.decode(
-            token, self.settings.secret_key, algorithms=[self.settings.algorithm]
+        refresh_token = jwt.encode(
+            {
+                **data,
+                "jti": refresh_token_jti,
+                "type": "refresh",
+                "iat": iat,
+                "exp": refresh_token_exp,
+            },
+            self.settings.secret_key,
+            algorithm=self.settings.algorithm,
         )
+
+        return (access_token, refresh_token, refresh_token_exp)

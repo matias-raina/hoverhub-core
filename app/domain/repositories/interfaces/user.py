@@ -21,7 +21,3 @@ class IUserRepository(ABC):
     @abstractmethod
     def update(self, user: User) -> User:
         """Update an existing user."""
-
-    @abstractmethod
-    def delete(self, user_id: UUID) -> bool:
-        """Delete a user by ID."""

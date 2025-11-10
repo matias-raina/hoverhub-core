@@ -33,12 +33,3 @@ class UserRepository(IUserRepository):
         self.session.commit()
         self.session.refresh(user)
         return user
-
-    def delete(self, user_id: UUID) -> bool:
-        """Delete a user by ID."""
-        user = self.get_by_id(user_id)
-        if user:
-            self.session.delete(user)
-            self.session.commit()
-            return True
-        return False
