@@ -11,7 +11,7 @@ async def get_current_user(authenticated_user: AuthenticatedUserDep):
         "id": authenticated_user.id,
         "email": authenticated_user.email,
         "is_active": authenticated_user.is_active,
-        "created_at": authenticated_user.created_at.isoformat(),
+        "created_at": authenticated_user.created_at,
     }
 
 
