@@ -3,7 +3,7 @@ from uuid import UUID
 
 from fastapi import HTTPException, status
 
-from app.domain.models.account import AccountType
+from app.domain.models.account import Account, AccountType
 from app.domain.models.application import Application, ApplicationStatus, ApplicationUpdate
 from app.domain.repositories.interfaces.account import IAccountRepository
 from app.domain.repositories.interfaces.application import IApplicationRepository
@@ -23,10 +23,10 @@ class ApplicationService(IApplicationService):
         self.account_repository = account_repository
         self.job_repository = job_repository
 
-    def _get_droner_accounts(self, user_id: UUID) -> List:
+    def _get_droner_accounts(self, user_id: UUID) -> List["Account"]:
         return self.account_repository.get_user_accounts(user_id, AccountType.DRONER)
 
-    def _get_employer_accounts(self, user_id: UUID) -> List:
+    def _get_employer_accounts(self, user_id: UUID) -> List["Account"]:
         return self.account_repository.get_user_accounts(user_id, AccountType.EMPLOYER)
 
     def apply_to_job(self, user_id: UUID, job_id: UUID, dto: CreateApplicationDto) -> Application:
