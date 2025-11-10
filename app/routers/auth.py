@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Request, status
 from pydantic import BaseModel
 
-from app.config.dependencies import AuthenticatedUserDep, AuthServiceDep, AuthTokenDep
+from app.config.dependencies import AuthServiceDep, AuthTokenDep
 from app.dto.auth import SigninDTO, SignupDTO
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
