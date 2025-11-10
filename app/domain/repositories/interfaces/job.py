@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Optional
+from typing import List, Optional
 from uuid import UUID
 
 from app.domain.models.job import Job, JobUpdate
@@ -15,7 +15,7 @@ class IJobRepository(ABC):
         """Retrieve a job entry by ID."""
 
     @abstractmethod
-    def read_jobs(self, offset: int, limit: int) -> list[Job]:
+    def read_jobs(self, offset: int, limit: int) -> List[Job]:
         """Retrieve all job entries."""
 
     @abstractmethod
