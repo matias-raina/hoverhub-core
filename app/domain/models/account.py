@@ -1,10 +1,14 @@
 import enum
 import uuid
 from datetime import datetime
+from typing import TYPE_CHECKING, List
 
-from sqlmodel import Column, Enum, Field, SQLModel
+from sqlmodel import Column, Enum, Field, Relationship, SQLModel
 
 from app.domain.models.fields import CreatedAtField, UpdatedAtField
+
+if TYPE_CHECKING:
+    from app.domain.models.job import Job
 
 
 class AccountType(str, enum.Enum):
@@ -21,3 +25,5 @@ class Account(SQLModel, table=True):
     is_active: bool = Field(default=True)
     created_at: datetime = CreatedAtField()
     updated_at: datetime = UpdatedAtField()
+
+    jobs: List["Job"] = Relationship(back_populates="account")

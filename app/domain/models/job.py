@@ -1,10 +1,13 @@
 import uuid
 from datetime import date, datetime
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 
-from sqlmodel import Field, SQLModel
+from sqlmodel import Field, Relationship, SQLModel
 
 from app.domain.models.fields import CreatedAtField, UpdatedAtField
+
+if TYPE_CHECKING:
+    from app.domain.models.account import Account
 
 
 class Job(SQLModel, table=True):
@@ -19,6 +22,8 @@ class Job(SQLModel, table=True):
     end_date: date
     created_at: datetime = CreatedAtField()
     updated_at: datetime = UpdatedAtField()
+
+    account: "Account" = Relationship(back_populates="jobs")
 
 
 class JobUpdate(SQLModel):

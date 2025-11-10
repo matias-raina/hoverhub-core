@@ -1,4 +1,7 @@
 from abc import ABC, abstractmethod
+from datetime import datetime
+from typing import Tuple
+from uuid import UUID
 
 
 class IAuthRepository(ABC):
@@ -11,13 +14,11 @@ class IAuthRepository(ABC):
         """Hash a plain text password."""
 
     @abstractmethod
-    def verify_token(self, token: str) -> dict:
-        """Verify a token and return payload."""
-
-    @abstractmethod
-    def create_token(self, data: dict) -> str:
-        """Create a token for a user."""
-
-    @abstractmethod
     def decode_token(self, token: str) -> dict:
         """Decode a token and return payload."""
+
+    @abstractmethod
+    def create_token(
+        self, data: dict
+    ) -> Tuple[UUID, str, datetime, UUID, str, datetime]:
+        """Create access and refresh tokens for a user."""

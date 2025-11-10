@@ -6,3 +6,5 @@ sqlmodel
 pydantic_settings
 alembic
 alembic-postgresql-enum
+redis[hiredis]
+orjson
