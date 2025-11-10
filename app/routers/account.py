@@ -3,7 +3,7 @@ from uuid import UUID
 from fastapi import APIRouter, status
 
 from app.config.dependencies import AccountServiceDep, AuthenticatedUserDep
-from app.dto.account import CreateAccountDto
+from app.dto.account import CreateAccountDto, UpdateAccountDto
 
 router = APIRouter(prefix="/accounts", tags=["Accounts"])
 
@@ -96,11 +96,23 @@ async def get_account(
     }
 
 
-@router.delete("/{account_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def remove_account(
+@router.put("/{account_id}", status_code=status.HTTP_200_OK)
+async def update_account(
     authenticated_user: AuthenticatedUserDep,
     account_service: AccountServiceDep,
     account_id: UUID,
+    dto: UpdateAccountDto,
 ):
-    account_service.delete_account(authenticated_user.id, account_id)
-    return None
+    """
+    Update a specific account by ID.
+    """
+    account = account_service.update_account(authenticated_user.id, account_id, dto)
+    return {
+        "id": account.id,
+        "user_id": account.user_id,
+        "name": account.name,
+        "account_type": account.account_type.value,
+        "is_active": account.is_active,
+        "created_at": account.created_at,
+        "updated_at": account.updated_at,
+    }
