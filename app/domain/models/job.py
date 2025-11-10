@@ -13,7 +13,8 @@ if TYPE_CHECKING:
 class Job(SQLModel, table=True):
     """Job model."""
 
-    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True, index=True)
+    id: uuid.UUID = Field(default_factory=uuid.uuid4,
+                          primary_key=True, index=True)
     account_id: uuid.UUID = Field(foreign_key="account.id", index=True)
     title: str
     description: str
