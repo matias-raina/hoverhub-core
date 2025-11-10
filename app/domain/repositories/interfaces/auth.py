@@ -1,10 +1,30 @@
+import enum
 from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import Tuple
-from uuid import UUID
+from typing import Tuple, TypedDict
+
+
+class JwtTokenType(str, enum.Enum):
+    """Token type enum."""
+
+    ACCESS = "access"
+    REFRESH = "refresh"
+
+
+class JwtTokenPayload(TypedDict):
+    """Token payload type."""
+
+    sub: str
+    sid: str
+    type: JwtTokenType
+    iat: datetime
+    exp: datetime
+    jti: str
 
 
 class IAuthRepository(ABC):
+    """Auth repository interface."""
+
     @abstractmethod
     def verify_password(self, plain_password: str, hashed_password: str) -> bool:
         """Verify a password."""
@@ -14,11 +34,9 @@ class IAuthRepository(ABC):
         """Hash a plain text password."""
 
     @abstractmethod
-    def decode_token(self, token: str) -> dict:
+    def decode_token(self, token: str) -> JwtTokenPayload:
         """Decode a token and return payload."""
 
     @abstractmethod
-    def create_token(
-        self, data: dict
-    ) -> Tuple[UUID, str, datetime, UUID, str, datetime]:
-        """Create access and refresh tokens for a user."""
+    def create_token(self, data: dict) -> Tuple[str, str, datetime]:
+        """Create access and refresh tokens for a user. Returns a tuple of (access_token, refresh_token, refresh_token_exp)."""
