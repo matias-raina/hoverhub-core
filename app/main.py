@@ -1,18 +1,19 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import ORJSONResponse
 
 from app.config.settings import get_settings
 from app.routers import routers
 
-app = FastAPI()
-
 settings = get_settings()
+
 
 # Initialize FastAPI app
 app = FastAPI(
     title="HoverHub API",
     description="API for HoverHub - Drone Job Platform",
     version="1.0.0",
+    default_response_class=ORJSONResponse,
 )
 
 app.add_middleware(
