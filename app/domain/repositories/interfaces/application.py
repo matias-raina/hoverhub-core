@@ -15,15 +15,21 @@ class IApplicationRepository(ABC):
         """Retrieve an application by ID."""
 
     @abstractmethod
-    def list_by_job(self, job_id: UUID, offset: int = 0, limit: int = 100) -> List[Application]:
+    def list_by_job(
+        self, job_id: UUID, offset: int = 0, limit: int = 100
+    ) -> List[Application]:
         """List applications for a given job."""
 
     @abstractmethod
-    def list_by_account(self, account_id: UUID, offset: int = 0, limit: int = 100) -> List[Application]:
+    def list_by_account(
+        self, account_id: UUID, offset: int = 0, limit: int = 100
+    ) -> List[Application]:
         """List applications submitted by an account."""
 
     @abstractmethod
-    def update(self, application_id: UUID, application: ApplicationUpdate) -> Optional[Application]:
+    def update(
+        self, application_id: UUID, application: ApplicationUpdate
+    ) -> Optional[Application]:
         """Update an application (e.g. change status or message)."""
 
     @abstractmethod

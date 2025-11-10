@@ -8,8 +8,8 @@ from sqlmodel import Column, Enum, Field, Relationship, SQLModel
 from app.domain.models.fields import created_at_field, updated_at_field
 
 if TYPE_CHECKING:
-    from app.domain.models.job import Job
     from app.domain.models.account import Account
+    from app.domain.models.job import Job
 
 
 class ApplicationStatus(str, enum.Enum):
