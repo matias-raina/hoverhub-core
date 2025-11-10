@@ -2,18 +2,20 @@ from typing import Annotated
 
 from fastapi import Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from redis.client import Redis
 from sqlmodel import Session
 
-from app.config.database import get_db
-from app.config.settings import Settings, get_settings
+from app.config import Settings, get_cache, get_db, get_settings
 from app.domain.models.user import User
 from app.domain.repositories.account import AccountRepository
 from app.domain.repositories.auth import AuthRepository
 from app.domain.repositories.interfaces.account import IAccountRepository
 from app.domain.repositories.interfaces.auth import IAuthRepository
 from app.domain.repositories.interfaces.job import IJobRepository
+from app.domain.repositories.interfaces.session import ISessionRepository
 from app.domain.repositories.interfaces.user import IUserRepository
 from app.domain.repositories.job import JobRepository
+from app.domain.repositories.session import SessionRepository
 from app.domain.repositories.user import UserRepository
 from app.services.account import AccountService
 from app.services.auth import AuthService
@@ -30,6 +32,7 @@ http_bearer = HTTPBearer()
 # Database dependency
 SessionDep = Annotated[Session, Depends(get_db)]
 SettingsDep = Annotated[Settings, Depends(get_settings)]
+CacheDep = Annotated[Redis, Depends(get_cache)]
 
 
 # Repository dependencies
@@ -57,24 +60,39 @@ def get_account_repository(
     return AccountRepository(session)
 
 
+def get_session_repository(
+    session: SessionDep,
+) -> ISessionRepository:
+    return SessionRepository(session)
+
+
 UserRepositoryDep = Annotated[IUserRepository, Depends(get_user_repository)]
 AuthRepositoryDep = Annotated[IAuthRepository, Depends(get_auth_repository)]
 JobRepositoryDep = Annotated[IJobRepository, Depends(get_job_repository)]
 AccountRepositoryDep = Annotated[IAccountRepository, Depends(get_account_repository)]
+SessionRepositoryDep = Annotated[ISessionRepository, Depends(get_session_repository)]
 
 
 # Service dependencies
 def get_auth_service(
+    cache: CacheDep,
     auth_repository: AuthRepositoryDep,
     user_repository: UserRepositoryDep,
+    session_repository: SessionRepositoryDep,
 ) -> IAuthService:
-    return AuthService(auth_repository, user_repository)
+    return AuthService(
+        cache,
+        auth_repository,
+        user_repository,
+        session_repository,
+    )
 
 
 def get_user_service(
     user_repository: UserRepositoryDep,
+    session_repository: SessionRepositoryDep,
 ) -> IUserService:
-    return UserService(user_repository)
+    return UserService(user_repository, session_repository)
 
 
 def get_job_service(
@@ -104,4 +122,11 @@ def get_authenticated_user(
     return auth_service.get_authenticated_user(credentials.credentials)
 
 
+def get_auth_token(
+    credentials: Annotated[HTTPAuthorizationCredentials, Depends(http_bearer)],
+) -> str:
+    return credentials.credentials
+
+
 AuthenticatedUserDep = Annotated[User, Depends(get_authenticated_user)]
+AuthTokenDep = Annotated[str, Depends(get_auth_token)]
