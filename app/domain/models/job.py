@@ -4,13 +4,14 @@ from typing import TYPE_CHECKING, Optional
 
 from sqlmodel import Field, Relationship, SQLModel
 
-from app.domain.models.fields import CreatedAtField, UpdatedAtField
+from app.domain.models.fields import created_at_field, updated_at_field
 
 if TYPE_CHECKING:
     from app.domain.models.account import Account
 
 
 class Job(SQLModel, table=True):
+    """Job model."""
 
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True, index=True)
     account_id: uuid.UUID = Field(foreign_key="account.id", index=True)
@@ -20,13 +21,15 @@ class Job(SQLModel, table=True):
     location: str
     start_date: date
     end_date: date
-    created_at: datetime = CreatedAtField()
-    updated_at: datetime = UpdatedAtField()
+    created_at: datetime = created_at_field()
+    updated_at: datetime = updated_at_field()
 
     account: "Account" = Relationship(back_populates="jobs")
 
 
 class JobUpdate(SQLModel):
+    """Job update model."""
+
     title: Optional[str] = None
     description: Optional[str] = None
     budget: Optional[float] = None

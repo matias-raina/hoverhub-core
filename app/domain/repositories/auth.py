@@ -6,13 +6,18 @@ import jwt
 from pwdlib import PasswordHash
 
 from app.config.settings import Settings
-from app.domain.repositories.interfaces.auth import IAuthRepository
+from app.domain.repositories.interfaces.auth import (
+    IAuthRepository,
+    JwtTokenPayload,
+    JwtTokenType,
+)
 
 
 class AuthRepository(IAuthRepository):
+    """Auth repository."""
+
     def __init__(self, settings: Settings):
         self.settings = settings
-
         self.hasher = PasswordHash.recommended()
 
     def verify_password(self, plain_password: str, hashed_password: str) -> bool:
@@ -21,14 +26,12 @@ class AuthRepository(IAuthRepository):
     def hash_password(self, plain_password: str) -> str:
         return self.hasher.hash(plain_password)
 
-    def decode_token(self, token: str) -> dict:
+    def decode_token(self, token: str) -> JwtTokenPayload:
         return jwt.decode(
             token, self.settings.secret_key, algorithms=[self.settings.algorithm]
         )
 
-    def create_token(
-        self, data: dict
-    ) -> Tuple[uuid.UUID, str, datetime, uuid.UUID, str, datetime]:
+    def create_token(self, data: dict) -> Tuple[str, str, datetime]:
         iat = datetime.now(timezone.utc)
 
         access_token_jti = str(uuid.uuid4())
@@ -45,7 +48,7 @@ class AuthRepository(IAuthRepository):
             {
                 **data,
                 "jti": access_token_jti,
-                "type": "access",
+                "type": JwtTokenType.ACCESS,
                 "iat": iat,
                 "exp": access_token_exp,
             },
@@ -57,7 +60,7 @@ class AuthRepository(IAuthRepository):
             {
                 **data,
                 "jti": refresh_token_jti,
-                "type": "refresh",
+                "type": JwtTokenType.REFRESH,
                 "iat": iat,
                 "exp": refresh_token_exp,
             },

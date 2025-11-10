@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from typing import List, Optional
 from uuid import UUID
 
-from app.domain.models.account import Account
+from app.domain.models.account import Account, AccountUpdate
 from app.dto.account import CreateAccountDto
 
 
@@ -21,9 +21,7 @@ class IAccountService(ABC):
         """Get the accounts associated with a user."""
 
     @abstractmethod
-    def update_account(self, account_id: UUID, account: Account) -> Account:
+    def update_account(
+        self, user_id: UUID, account_id: UUID, account_update: AccountUpdate
+    ) -> Account:
         """Update an existing account."""
-
-    @abstractmethod
-    def delete_account(self, user_id: UUID, account_id: UUID) -> bool:
-        """Delete an existing account. Validates that the user can only delete accounts from their domain."""

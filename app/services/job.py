@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional
 from uuid import UUID
 
 from fastapi import HTTPException, Query, status
@@ -26,7 +26,9 @@ class JobService(IJobService):
             )
         return job
 
-    def read_jobs(self, offset: int = 0, limit: int = Query(default=100, le=100)) -> list[Job]:
+    def read_jobs(
+        self, offset: int = 0, limit: int = Query(default=100, le=100)
+    ) -> List[Job]:
         """Retrieve all jobs."""
         return self.job_repository.read_jobs(offset=offset, limit=limit)
 

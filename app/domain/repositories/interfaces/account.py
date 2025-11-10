@@ -1,11 +1,13 @@
 from abc import ABC, abstractmethod
-from typing import Optional
+from typing import List, Optional
 from uuid import UUID
 
-from app.domain.models.account import Account
+from app.domain.models.account import Account, AccountType, AccountUpdate
 
 
 class IAccountRepository(ABC):
+    """Account repository interface."""
+
     @abstractmethod
     def create(self, account: Account) -> Account:
         """Create a new account in the database."""
@@ -15,17 +17,15 @@ class IAccountRepository(ABC):
         """Retrieve an account by ID."""
 
     @abstractmethod
-    def get_user_accounts(self, user_id: UUID) -> list[Account]:
-        """Retrieve all accounts for a specific user."""
+    def get_user_accounts(
+        self, user_id: UUID, account_type: Optional[AccountType] = None
+    ) -> List[Account]:
+        """Retrieve all accounts for a specific user and account type."""
 
     @abstractmethod
-    def get_all(self) -> list[Account]:
+    def get_all(self) -> List[Account]:
         """Retrieve all accounts."""
 
     @abstractmethod
-    def update(self, account: Account) -> Account:
+    def update(self, account_id: UUID, account_update: AccountUpdate) -> Account:
         """Update an existing account."""
-
-    @abstractmethod
-    def delete(self, account_id: UUID) -> bool:
-        """Delete an account by ID."""
