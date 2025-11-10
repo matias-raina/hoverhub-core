@@ -1,13 +1,16 @@
 import datetime
 from typing import List, Literal, Tuple
+from uuid import UUID
 
 import jwt
 from fastapi import HTTPException, status
 from redis.client import Redis
 from sqlalchemy.exc import IntegrityError
 
+from app.domain.models.account import Account
 from app.domain.models.session import UserSession
 from app.domain.models.user import User
+from app.domain.repositories.interfaces.account import IAccountRepository
 from app.domain.repositories.interfaces.auth import (
     IAuthRepository,
     JwtTokenPayload,
@@ -28,11 +31,13 @@ class AuthService(IAuthService):
         auth_repository: IAuthRepository,
         user_repository: IUserRepository,
         session_repository: ISessionRepository,
+        account_repository: IAccountRepository,
     ):
         self.cache = cache
         self.auth_repository = auth_repository
         self.user_repository = user_repository
         self.session_repository = session_repository
+        self.account_repository = account_repository
 
     def _decode_token_safely(
         self, token: str, expected_type: JwtTokenType = None
@@ -206,6 +211,32 @@ class AuthService(IAuthService):
         self._validate_session(payload["sid"])
 
         return self._validate_user_exists_and_active(payload["sub"])
+
+    def get_authenticated_account(self, token: str, account_id: UUID) -> Account:
+        """
+        Get authenticated account from access token and account ID.
+
+        Validates that the user is authenticated and owns the specified account.
+        """
+        # First, authenticate the user
+        user = self.get_authenticated_user(token)
+
+        # Then verify they own the account
+        account = self.account_repository.get_by_id(account_id)
+
+        if not account:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Account not found",
+            )
+
+        if account.user_id != user.id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You are not authorized to access this account",
+            )
+
+        return account
 
     def refresh_token(self, refresh_token: str) -> Tuple[str, str]:
         """Refresh access token using refresh token."""

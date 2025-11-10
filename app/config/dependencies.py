@@ -1,11 +1,13 @@
 from typing import Annotated
+from uuid import UUID
 
-from fastapi import Depends
+from fastapi import Depends, Header, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from redis.client import Redis
 from sqlmodel import Session
 
 from app.config import Settings, get_cache, get_db, get_settings
+from app.domain.models.account import Account
 from app.domain.models.user import User
 from app.domain.repositories import (
     AccountRepository,
@@ -87,6 +89,7 @@ def get_auth_service(
     auth_repository: AuthRepositoryDep,
     user_repository: UserRepositoryDep,
     session_repository: SessionRepositoryDep,
+    account_repository: AccountRepositoryDep,
 ) -> IAuthService:
     """Get the auth service."""
     return AuthService(
@@ -94,6 +97,7 @@ def get_auth_service(
         auth_repository,
         user_repository,
         session_repository,
+        account_repository,
     )
 
 
@@ -142,5 +146,28 @@ def get_auth_token(
     return credentials.credentials
 
 
+def get_account_context(
+    credentials: Annotated[HTTPAuthorizationCredentials, Depends(http_bearer)],
+    auth_service: Annotated[IAuthService, Depends(get_auth_service)],
+    x_account_id: str = Header(..., alias="x-account-id"),
+) -> Account:
+    """
+    Get and validate account context from x-account-id header.
+
+    Ensures the authenticated user owns the specified account.
+    """
+    try:
+        account_id = UUID(x_account_id)
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid account ID format",
+        ) from exc
+
+    # This will validate authentication and ownership
+    return auth_service.get_authenticated_account(credentials.credentials, account_id)
+
+
 AuthenticatedUserDep = Annotated[User, Depends(get_authenticated_user)]
 AuthTokenDep = Annotated[str, Depends(get_auth_token)]
+AccountContextDep = Annotated[Account, Depends(get_account_context)]
