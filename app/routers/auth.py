@@ -1,13 +1,18 @@
-from fastapi import APIRouter, status
+from fastapi import APIRouter, Request, status
+from pydantic import BaseModel
 
-from app.config.dependencies import AuthenticatedUserDep, AuthServiceDep
+from app.config.dependencies import AuthenticatedUserDep, AuthServiceDep, AuthTokenDep
 from app.dto.auth import SigninDTO, SignupDTO
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 
+class RefreshTokenRequest(BaseModel):
+    refresh_token: str
+
+
 @router.post("/signup", status_code=status.HTTP_201_CREATED)
-async def signup(dto: SignupDTO, auth_service: AuthServiceDep):
+async def signup(request: Request, dto: SignupDTO, auth_service: AuthServiceDep):
     """
     Register a new user account.
 
@@ -18,67 +23,83 @@ async def signup(dto: SignupDTO, auth_service: AuthServiceDep):
     Returns:
         User information and success message
     """
-    user = auth_service.signup(dto)
+    user, at, rt = auth_service.signup(request.client.host, dto)
+
     return {
-        "message": "User registered successfully",
         "user": {
-            "id": str(user.id),
+            "id": user.id,
             "email": user.email,
-            "created_at": user.created_at.isoformat(),
+            "created_at": user.created_at,
         },
+        "access_token": at,
+        "refresh_token": rt,
+        "token_type": "bearer",
     }
 
 
 @router.post("/signin")
-async def signin(dto: SigninDTO, auth_service: AuthServiceDep):
+async def signin(request: Request, dto: SigninDTO, auth_service: AuthServiceDep):
     """
     Sign in with email and password (JSON format).
 
-    Returns a JWT access token that should be included in subsequent requests
-    as: Authorization: Bearer <token>
+    Returns JWT access and refresh tokens. The access token should be included
+    in subsequent requests as: Authorization: Bearer <token>
 
     Args:
-        dto: Signin credentials (email and password)
+        dto: Signin credentials (email, password, and host)
         auth_service: Injected authentication service
 
     Returns:
-        Access token and token type
+        Access token, refresh token, and token type
     """
-    access_token = auth_service.signin(dto)
-    return {"access_token": access_token, "token_type": "bearer"}
+    at, rt = auth_service.signin(request.client.host, dto)
+    return {
+        "access_token": at,
+        "refresh_token": rt,
+        "token_type": "bearer",
+    }
 
 
-@router.post("/signout")
-async def signout():
+@router.post("/refresh")
+async def refresh_token(request: RefreshTokenRequest, auth_service: AuthServiceDep):
     """
-    Sign out endpoint (JWT tokens are stateless).
+    Refresh access token using a valid refresh token.
 
-    Client should discard the token on their side.
-    For proper logout, implement token blacklisting or use short-lived tokens.
+    Returns new access and refresh tokens. The old refresh token will be invalidated.
+
+    Args:
+        request: Request containing the refresh token
+        auth_service: Injected authentication service
 
     Returns:
-        Success message
+        New access token, new refresh token, and token type
     """
-    return {"message": "Successfully signed out. Please discard your access token."}
+    at, rt = auth_service.refresh_token(request.refresh_token)
+    return {
+        "access_token": at,
+        "refresh_token": rt,
+        "token_type": "bearer",
+    }
 
 
-@router.get("/me")
-async def get_authenticated_user(authenticated_user: AuthenticatedUserDep):
+@router.post("/signout", status_code=status.HTTP_204_NO_CONTENT)
+async def signout(
+    token: AuthTokenDep,
+    auth_service: AuthServiceDep,
+):
     """
-    Get currently authenticated user information.
+    Sign out and revoke the current session.
+
+    This will deactivate the session and blacklist the current token.
+    All tokens associated with this session will be invalidated.
 
     Requires a valid JWT token in the Authorization header.
 
     Args:
-        authenticated_user: Current authenticated user (injected from JWT)
+        token: JWT token from Authorization header
+        auth_service: Injected authentication service
 
     Returns:
-        Current user information
+        Success message
     """
-    return {
-        "id": str(authenticated_user.id),
-        "email": authenticated_user.email,
-        "is_active": authenticated_user.is_active,
-        "created_at": authenticated_user.created_at.isoformat(),
-        "updated_at": authenticated_user.updated_at.isoformat(),
-    }
+    auth_service.signout(token)

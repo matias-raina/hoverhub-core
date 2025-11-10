@@ -14,7 +14,27 @@ async def create_account(
     dto: CreateAccountDto,
     account_service: AccountServiceDep,
 ):
-    return account_service.create_account(authenticated_user.id, dto)
+    """
+    Create a new account for the authenticated user.
+
+    Args:
+        authenticated_user: Current authenticated user (injected from JWT)
+        dto: Account creation data
+        account_service: Injected account service
+
+    Returns:
+        The created account information
+    """
+    account = account_service.create_account(authenticated_user.id, dto)
+    return {
+        "id": account.id,
+        "user_id": account.user_id,
+        "name": account.name,
+        "account_type": account.account_type.value,
+        "is_active": account.is_active,
+        "created_at": account.created_at,
+        "updated_at": account.updated_at,
+    }
 
 
 @router.get("/", status_code=status.HTTP_200_OK)
@@ -22,7 +42,29 @@ async def get_user_accounts(
     authenticated_user: AuthenticatedUserDep,
     account_service: AccountServiceDep,
 ):
-    return account_service.get_user_accounts(authenticated_user.id)
+    """
+    Get all accounts for the authenticated user.
+
+    Args:
+        authenticated_user: Current authenticated user (injected from JWT)
+        account_service: Injected account service
+
+    Returns:
+        List of user accounts
+    """
+    accounts = account_service.get_user_accounts(authenticated_user.id)
+    return [
+        {
+            "id": account.id,
+            "user_id": account.user_id,
+            "name": account.name,
+            "account_type": account.account_type.value,
+            "is_active": account.is_active,
+            "created_at": account.created_at,
+            "updated_at": account.updated_at,
+        }
+        for account in accounts
+    ]
 
 
 @router.get("/{account_id}", status_code=status.HTTP_200_OK)
@@ -31,7 +73,27 @@ async def get_account(
     account_service: AccountServiceDep,
     account_id: UUID,
 ):
-    return account_service.get_account_by_id(authenticated_user.id, account_id)
+    """
+    Get a specific account by ID.
+
+    Args:
+        authenticated_user: Current authenticated user (injected from JWT)
+        account_service: Injected account service
+        account_id: The ID of the account to retrieve
+
+    Returns:
+        Account information
+    """
+    account = account_service.get_account_by_id(authenticated_user.id, account_id)
+    return {
+        "id": account.id,
+        "user_id": account.user_id,
+        "name": account.name,
+        "account_type": account.account_type.value,
+        "is_active": account.is_active,
+        "created_at": account.created_at,
+        "updated_at": account.updated_at,
+    }
 
 
 @router.delete("/{account_id}", status_code=status.HTTP_204_NO_CONTENT)
