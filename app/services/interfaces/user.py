@@ -1,7 +1,8 @@
 from abc import ABC, abstractmethod
-from typing import Optional
+from typing import List, Optional
 from uuid import UUID
 
+from app.domain.models.session import UserSession
 from app.domain.models.user import User
 
 
@@ -21,3 +22,7 @@ class IUserService(ABC):
     @abstractmethod
     def delete_user(self, user_id: UUID) -> bool:
         """Delete a user."""
+
+    @abstractmethod
+    def get_user_sessions(self, user_id: UUID) -> List[UserSession]:
+        """Get all sessions for a user."""

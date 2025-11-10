@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from typing import Tuple
 
 from app.domain.models.user import User
 from app.dto.auth import SigninDTO, SignupDTO
@@ -7,11 +8,11 @@ from app.dto.auth import SigninDTO, SignupDTO
 class IAuthService(ABC):
 
     @abstractmethod
-    def signup(self, dto: SignupDTO) -> User:
+    def signup(self, host: str, dto: SignupDTO) -> Tuple[User, str, str]:
         pass
 
     @abstractmethod
-    def signin(self, dto: SigninDTO) -> str:
+    def signin(self, host: str, dto: SigninDTO) -> Tuple[str, str]:
         pass
 
     @abstractmethod
@@ -23,5 +24,9 @@ class IAuthService(ABC):
         pass
 
     @abstractmethod
-    def signout(self):
+    def refresh_token(self, refresh_token: str) -> Tuple[str, str]:
+        pass
+
+    @abstractmethod
+    def signout(self, token: str) -> bool:
         pass
