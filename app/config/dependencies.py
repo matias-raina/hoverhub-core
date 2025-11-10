@@ -13,6 +13,7 @@ from app.domain.repositories import (
     JobRepository,
     SessionRepository,
     UserRepository,
+    ApplicationRepository,
 )
 from app.domain.repositories.interfaces import (
     IAccountRepository,
@@ -20,13 +21,15 @@ from app.domain.repositories.interfaces import (
     IJobRepository,
     ISessionRepository,
     IUserRepository,
+    IApplicationRepository,
 )
-from app.services import AccountService, AuthService, JobService, UserService
+from app.services import AccountService, AuthService, JobService, UserService, ApplicationService
 from app.services.interfaces import (
     IAccountService,
     IAuthService,
     IJobService,
     IUserService,
+    IApplicationService,
 )
 
 # HTTP Bearer scheme for token authentication
@@ -79,6 +82,13 @@ AuthRepositoryDep = Annotated[IAuthRepository, Depends(get_auth_repository)]
 JobRepositoryDep = Annotated[IJobRepository, Depends(get_job_repository)]
 AccountRepositoryDep = Annotated[IAccountRepository, Depends(get_account_repository)]
 SessionRepositoryDep = Annotated[ISessionRepository, Depends(get_session_repository)]
+def get_application_repository(
+    session: SessionDep,
+) -> IApplicationRepository:
+    """Get the application repository."""
+    return ApplicationRepository(session)
+
+ApplicationRepositoryDep = Annotated[IApplicationRepository, Depends(get_application_repository)]
 
 
 # Service dependencies
@@ -124,6 +134,19 @@ AuthServiceDep = Annotated[IAuthService, Depends(get_auth_service)]
 UserServiceDep = Annotated[IUserService, Depends(get_user_service)]
 JobServiceDep = Annotated[IJobService, Depends(get_job_service)]
 AccountServiceDep = Annotated[IAccountService, Depends(get_account_service)]
+def get_application_service(
+    application_repository: ApplicationRepositoryDep,
+    account_repository: AccountRepositoryDep,
+    job_repository: JobRepositoryDep,
+) -> IApplicationService:
+    """Get the application service."""
+    return ApplicationService(
+        application_repository,
+        account_repository,
+        job_repository,
+    )
+
+ApplicationServiceDep = Annotated[IApplicationService, Depends(get_application_service)]
 
 
 # Authentication dependency - Gets authenticated user from JWT token
