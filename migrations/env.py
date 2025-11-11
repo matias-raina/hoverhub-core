@@ -11,13 +11,11 @@ from app.domain.models import *
 
 load_dotenv()
 
-POSTGRES_USER = os.getenv("POSTGRES_USER")
-POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD")
-POSTGRES_HOST = os.getenv("POSTGRES_HOST")
-POSTGRES_PORT = os.getenv("POSTGRES_PORT")
-POSTGRES_DB = os.getenv("POSTGRES_DB")
+# Get the database connection string from environment
+url = os.getenv("DB_CONNECTION_STRING")
 
-url = f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}"
+if not url:
+    raise ValueError("DB_CONNECTION_STRING environment variable is not set")
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
