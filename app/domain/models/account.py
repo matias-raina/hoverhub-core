@@ -9,6 +9,7 @@ from app.domain.models.fields import created_at_field, updated_at_field
 
 if TYPE_CHECKING:
     from app.domain.models.job import Job
+    from app.domain.models.favorite import Favorite
 
 
 class AccountType(str, enum.Enum):
@@ -21,7 +22,8 @@ class AccountType(str, enum.Enum):
 class Account(SQLModel, table=True):
     """Account model."""
 
-    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True, index=True)
+    id: uuid.UUID = Field(default_factory=uuid.uuid4,
+                          primary_key=True, index=True)
     user_id: uuid.UUID = Field(foreign_key="user.id", index=True)
     name: str = Field(nullable=False)
     account_type: AccountType = Field(sa_column=Column(Enum(AccountType)))
@@ -30,6 +32,7 @@ class Account(SQLModel, table=True):
     updated_at: datetime = updated_at_field()
 
     jobs: List["Job"] = Relationship(back_populates="account")
+    favorites: List["Favorite"] = Relationship(back_populates="account")
 
 
 class AccountUpdate(SQLModel):
