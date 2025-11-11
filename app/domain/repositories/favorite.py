@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Sequence, Optional
 from uuid import UUID
 
 from fastapi import Query
@@ -26,17 +26,12 @@ class FavoriteRepository(IFavoriteRepository):
         """Retrieve a favorite entry by ID."""
         return self.session.get(Favorite, favorite_id)
 
-    def get_by_job_id(self, job_id: UUID) -> List[Favorite]:
-        """Retrieve favorite entries by Job ID."""
-        statement = select(Favorite).where(Favorite.job_id == job_id)
-        return list(self.session.exec(statement).all())
-
-    def get_by_account_id(self, account_id: UUID) -> List[Favorite]:
+    def get_by_account_id(self, account_id: UUID) -> Sequence[Favorite]:
         """Retrieve favorite entries by Account ID."""
         statement = select(Favorite).where(Favorite.account_id == account_id)
-        return list(self.session.exec(statement).all())
+        return self.session.exec(statement).all()
 
-    def get_all(self, offset: int = 0, limit: int = Query(default=100, le=100)) -> List[Favorite]:
+    def get_all(self, offset: int = 0, limit: int = Query(default=100, le=100)) -> Sequence[Favorite]:
         """Retrieve all favorite entries."""
         return self.session.exec(select(Favorite).offset(offset).limit(limit)).all()
 
