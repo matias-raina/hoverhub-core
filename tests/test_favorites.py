@@ -6,35 +6,35 @@ client = TestClient(app)
 
 def test_add_favorite():
     favorite_data = {"job_id": 1, "user_id": 1}
-    response = client.post("/favorites", json=favorite_data)
+    response = client.post("jobs/favorites", json=favorite_data)
     assert response.status_code == 201
     assert response.json() == {"job_id": 1, "user_id": 1}
 
 
 def test_get_favorites():
-    response = client.get("/favorites?user_id=1")
+    response = client.get("jobs/favorites?user_id=1")
     assert response.status_code == 200
     assert isinstance(response.json(), list)
 
 
 def test_add_favorite_invalid_job():
     favorite_data = {"job_id": 999, "user_id": 1}
-    response = client.post("/favorites", json=favorite_data)
+    response = client.post("jobs/favorites", json=favorite_data)
     assert response.status_code == 404
 
 
 def test_get_favorites_no_user():
-    response = client.get("/favorites?user_id=999")
+    response = client.get("jobs/favorites?user_id=999")
     assert response.status_code == 404
 
 
 def test_remove_favorite():
     favorite_data = {"job_id": 1, "user_id": 1}
-    response = client.delete("/favorites", json=favorite_data)
+    response = client.delete("jobs/favorites", json=favorite_data)
     assert response.status_code == 204
 
 
 def test_remove_favorite_not_found():
     favorite_data = {"job_id": 999, "user_id": 1}
-    response = client.delete("/favorites", json=favorite_data)
+    response = client.delete("jobs/favorites", json=favorite_data)
     assert response.status_code == 404
