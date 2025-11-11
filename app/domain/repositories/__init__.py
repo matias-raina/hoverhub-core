@@ -3,6 +3,7 @@ from app.domain.repositories.auth import AuthRepository
 from app.domain.repositories.job import JobRepository
 from app.domain.repositories.session import SessionRepository
 from app.domain.repositories.user import UserRepository
+from app.domain.repositories.favorite import FavoriteRepository
 
 __all__ = [
     "UserRepository",
@@ -10,4 +11,5 @@ __all__ = [
     "JobRepository",
     "AccountRepository",
     "SessionRepository",
+    "FavoriteRepository",
 ]
