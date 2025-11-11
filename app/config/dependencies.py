@@ -11,6 +11,7 @@ from app.domain.models.account import Account
 from app.domain.models.user import User
 from app.domain.repositories import (
     AccountRepository,
+    ApplicationRepository,
     AuthRepository,
     JobRepository,
     SessionRepository,
@@ -19,6 +20,7 @@ from app.domain.repositories import (
 )
 from app.domain.repositories.interfaces import (
     IAccountRepository,
+    IApplicationRepository,
     IAuthRepository,
     IJobRepository,
     ISessionRepository,
@@ -28,6 +30,7 @@ from app.domain.repositories.interfaces import (
 from app.services import AccountService, AuthService, JobService, UserService, FavoriteService
 from app.services.interfaces import (
     IAccountService,
+    IApplicationService,
     IAuthService,
     IJobService,
     IUserService,
@@ -86,15 +89,20 @@ def get_favorite_repository(
     return FavoriteRepository(session)
 
 
+def get_application_repository(
+    session: SessionDep,
+) -> IApplicationRepository:
+    """Get the application repository."""
+    return ApplicationRepository(session)
+
+
 UserRepositoryDep = Annotated[IUserRepository, Depends(get_user_repository)]
 AuthRepositoryDep = Annotated[IAuthRepository, Depends(get_auth_repository)]
 JobRepositoryDep = Annotated[IJobRepository, Depends(get_job_repository)]
-AccountRepositoryDep = Annotated[IAccountRepository, Depends(
-    get_account_repository)]
-SessionRepositoryDep = Annotated[ISessionRepository, Depends(
-    get_session_repository)]
-FavoriteRepositoryDep = Annotated[IFavoriteRepository, Depends(
-    get_favorite_repository)]
+FavoriteRepositoryDep = Annotated[IFavoriteRepository, Depends(get_favorite_repository)]
+AccountRepositoryDep = Annotated[IAccountRepository, Depends(get_account_repository)]
+SessionRepositoryDep = Annotated[ISessionRepository, Depends(get_session_repository)]
+ApplicationRepositoryDep = Annotated[IApplicationRepository, Depends(get_application_repository)]
 
 
 # Service dependencies
@@ -143,6 +151,19 @@ def get_favorite_service(
 ) -> IFavoriteService:
     """Get the favorite service."""
     return FavoriteService(favorite_repository)
+  
+  
+def get_application_service(
+    application_repository: ApplicationRepositoryDep,
+    account_repository: AccountRepositoryDep,
+    job_repository: JobRepositoryDep,
+) -> IApplicationService:
+    """Get the application service."""
+    return ApplicationService(
+        application_repository,
+        account_repository,
+        job_repository,
+    )
 
 
 AuthServiceDep = Annotated[IAuthService, Depends(get_auth_service)]
@@ -150,6 +171,7 @@ UserServiceDep = Annotated[IUserService, Depends(get_user_service)]
 JobServiceDep = Annotated[IJobService, Depends(get_job_service)]
 AccountServiceDep = Annotated[IAccountService, Depends(get_account_service)]
 FavoriteServiceDep = Annotated[IFavoriteService, Depends(get_favorite_service)]
+ApplicationServiceDep = Annotated[IApplicationService, Depends(get_application_service)]
 
 
 # Authentication dependency - Gets authenticated user from JWT token
