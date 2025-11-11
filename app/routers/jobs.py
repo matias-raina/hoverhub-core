@@ -62,9 +62,9 @@ async def get_job(
         "budget": job.budget,
         "location": job.location,
         "start_date": job.start_date,
-        "end_date": job.end_date.isoformat(),
-        "created_at": job.created_at.isoformat(),
-        "updated_at": job.updated_at.isoformat(),
+        "end_date": job.end_date,
+        "created_at": job.created_at,
+        "updated_at": job.updated_at,
     }
 
 

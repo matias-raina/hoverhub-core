@@ -41,7 +41,8 @@ class AccountService(IAccountService):
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail="User can only have one droner account",
                 )
-        account = Account(user_id=user_id, name=dto.name, account_type=dto.account_type)
+        account = Account(user_id=user_id, name=dto.name,
+                          account_type=dto.account_type)
         return self.account_repository.create(account)
 
     def get_user_accounts(self, user_id: UUID) -> List[Account]:

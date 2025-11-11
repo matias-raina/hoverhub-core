@@ -4,6 +4,7 @@ from app.domain.repositories.interfaces.auth import IAuthRepository
 from app.domain.repositories.interfaces.job import IJobRepository
 from app.domain.repositories.interfaces.session import ISessionRepository
 from app.domain.repositories.interfaces.user import IUserRepository
+from app.domain.repositories.interfaces.favorite import IFavoriteRepository
 
 __all__ = [
     "IUserRepository",
@@ -11,5 +12,6 @@ __all__ = [
     "IJobRepository",
     "IAccountRepository",
     "ISessionRepository",
+    "IFavoriteRepository",
     "IApplicationRepository",
 ]
