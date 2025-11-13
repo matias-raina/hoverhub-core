@@ -1,7 +1,10 @@
 import enum
 from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import Tuple, TypedDict
+from typing import Tuple, Union
+from uuid import UUID
+
+from pydantic import BaseModel, ConfigDict, field_validator
 
 
 class JwtTokenType(str, enum.Enum):
@@ -11,15 +14,41 @@ class JwtTokenType(str, enum.Enum):
     REFRESH = "refresh"
 
 
-class JwtTokenPayload(TypedDict):
-    """Token payload type."""
+class JwtTokenPayload(BaseModel):
+    """Token payload model with automatic UUID conversion."""
 
-    sub: str
-    sid: str
+    model_config = ConfigDict(use_enum_values=True)
+
+    sub: UUID
+    sid: UUID
     type: JwtTokenType
-    iat: datetime
-    exp: datetime
+    iat: Union[datetime, int]  # JWT returns int timestamps
+    exp: Union[datetime, int]  # JWT returns int timestamps
     jti: str
+
+    @field_validator("sub", "sid", mode="before")
+    @classmethod
+    def convert_to_uuid(cls, v):
+        """Convert string UUIDs to UUID objects."""
+        if isinstance(v, UUID):
+            return v
+        if isinstance(v, str):
+            return UUID(v)
+        return v
+
+    @property
+    def exp_timestamp(self) -> int:
+        """Get expiration as Unix timestamp."""
+        if isinstance(self.exp, datetime):
+            return int(self.exp.timestamp())
+        return self.exp
+
+    @property
+    def iat_timestamp(self) -> int:
+        """Get issued at as Unix timestamp."""
+        if isinstance(self.iat, datetime):
+            return int(self.iat.timestamp())
+        return self.iat
 
 
 class IAuthRepository(ABC):
@@ -34,8 +63,8 @@ class IAuthRepository(ABC):
         """Hash a plain text password."""
 
     @abstractmethod
-    def decode_token(self, token: str) -> JwtTokenPayload:
-        """Decode a token and return payload."""
+    def decode_token(self, token: str) -> dict:
+        """Decode a token and return raw payload dictionary."""
 
     @abstractmethod
     def create_token(self, data: dict) -> Tuple[str, str, datetime]:

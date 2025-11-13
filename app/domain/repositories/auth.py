@@ -6,11 +6,7 @@ import jwt
 from pwdlib import PasswordHash
 
 from app.config.settings import Settings
-from app.domain.repositories.interfaces.auth import (
-    IAuthRepository,
-    JwtTokenPayload,
-    JwtTokenType,
-)
+from app.domain.repositories.interfaces.auth import IAuthRepository, JwtTokenType
 
 
 class AuthRepository(IAuthRepository):
@@ -26,7 +22,8 @@ class AuthRepository(IAuthRepository):
     def hash_password(self, plain_password: str) -> str:
         return self.hasher.hash(plain_password)
 
-    def decode_token(self, token: str) -> JwtTokenPayload:
+    def decode_token(self, token: str) -> dict:
+        """Decode a token and return raw payload dictionary."""
         return jwt.decode(
             token, self.settings.secret_key, algorithms=[self.settings.algorithm]
         )
