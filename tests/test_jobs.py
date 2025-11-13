@@ -37,7 +37,7 @@ class TestCreateJob:
         assert "created_at" in data
         assert "updated_at" in data
 
-    def test_create_job_invalid_account_id(self, client, db_session):
+    def test_create_job_invalid_account_id(self, client):
         """Test creating a job with invalid account_id"""
         job_data = {
             "account_id": str(uuid4()),  # Non-existent account
@@ -59,7 +59,7 @@ class TestCreateJob:
             status.HTTP_400_BAD_REQUEST,
         ]
 
-    def test_create_job_missing_fields(self, client, db_session):
+    def test_create_job_missing_fields(self, client):
         """Test creating a job with missing required fields"""
         job_data = {
             "title": "Incomplete Job",
@@ -147,9 +147,9 @@ class TestListJobs:
         account1 = create_test_account(db_session, user.id, name="Account 1")
         account2 = create_test_account(db_session, user.id, name="Account 2")
 
-        job1 = create_test_job(db_session, account1.id, title="Job 1")
-        job2 = create_test_job(db_session, account2.id, title="Job 2")
-        job3 = create_test_job(db_session, account1.id, title="Job 3")
+        create_test_job(db_session, account1.id, title="Job 1")
+        create_test_job(db_session, account2.id, title="Job 2")
+        create_test_job(db_session, account1.id, title="Job 3")
 
         response = client.get("/jobs/")
         assert response.status_code == status.HTTP_200_OK
