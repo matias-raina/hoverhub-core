@@ -2,7 +2,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, status
 
-from app.config.dependencies import AccountContextDep, JobServiceDep
+from app.config.dependencies import AuthenticatedAccountDep, JobServiceDep
 from app.dto.job import CreateJobDto, UpdateJobDto
 
 router = APIRouter(prefix="/jobs", tags=["Jobs"])
@@ -10,7 +10,7 @@ router = APIRouter(prefix="/jobs", tags=["Jobs"])
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
 async def create_job(
-    account_context: AccountContextDep,
+    authenticated_account: AuthenticatedAccountDep,
     dto: CreateJobDto,
     job_service: JobServiceDep,
 ):
@@ -18,14 +18,14 @@ async def create_job(
     Create a new job.
 
     Args:
-        account_context: The account context from authentication
+        authenticated_account: The authenticated account from authentication
         dto: The job data to create
         job_service: Injected job service
 
     Returns:
         The created job information
     """
-    job = job_service.create_job(account_context.id, dto)
+    job = job_service.create_job(authenticated_account.id, dto)
     return {
         "id": job.id,
         "account_id": job.account_id,
@@ -42,7 +42,7 @@ async def create_job(
 
 @router.get("/{job_id}", status_code=status.HTTP_200_OK)
 async def get_job(
-    account_context: AccountContextDep,
+    authenticated_account: AuthenticatedAccountDep,
     job_id: UUID,
     job_service: JobServiceDep,
 ):
@@ -50,14 +50,14 @@ async def get_job(
     Get a job by ID.
 
     Args:
-        account_context: The account context from authentication
+        authenticated_account: The authenticated account from authentication
         job_id: The ID of the job to retrieve
         job_service: Injected job service
 
     Returns:
         Job information
     """
-    job = job_service.get_by_id(account_context.id, job_id)
+    job = job_service.get_by_id(authenticated_account.id, job_id)
     return {
         "id": job.id,
         "account_id": job.account_id,
@@ -109,7 +109,7 @@ async def list_jobs(
 
 @router.put("/{job_id}", status_code=status.HTTP_200_OK)
 async def update_job(
-    account_context: AccountContextDep,
+    authenticated_account: AuthenticatedAccountDep,
     job_id: UUID,
     dto: UpdateJobDto,
     job_service: JobServiceDep,
@@ -118,7 +118,7 @@ async def update_job(
     Update a job by ID.
 
     Args:
-        account_context: The account context from authentication
+        authenticated_account: The authenticated account from authentication
         job_id: The ID of the job to update
         dto: The updated job data
         job_service: Injected job service
@@ -126,7 +126,7 @@ async def update_job(
     Returns:
         The updated job information
     """
-    job = job_service.update_job(account_context.id, job_id, dto)
+    job = job_service.update_job(authenticated_account.id, job_id, dto)
     return {
         "id": job.id,
         "account_id": job.account_id,
@@ -143,7 +143,7 @@ async def update_job(
 
 @router.delete("/{job_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_job(
-    account_context: AccountContextDep,
+    authenticated_account: AuthenticatedAccountDep,
     job_id: UUID,
     job_service: JobServiceDep,
 ):
@@ -151,8 +151,8 @@ async def delete_job(
     Delete a job by ID.
 
     Args:
-        account_context: The account context from authentication
+        authenticated_account: The authenticated account from authentication
         job_id: The ID of the job to delete
         job_service: Injected job service
     """
-    job_service.delete_job(account_context.id, job_id)
+    job_service.delete_job(authenticated_account.id, job_id)

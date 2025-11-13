@@ -196,13 +196,13 @@ def get_auth_token(
     return credentials.credentials
 
 
-def get_account_context(
+def get_authenticated_account(
     credentials: Annotated[HTTPAuthorizationCredentials, Depends(http_bearer)],
     auth_service: Annotated[IAuthService, Depends(get_auth_service)],
     x_account_id: str = Header(..., alias="x-account-id"),
 ) -> Account:
     """
-    Get and validate account context from x-account-id header.
+    Get and validate authenticated account from x-account-id header.
 
     Ensures the authenticated user owns the specified account.
     """
@@ -220,4 +220,4 @@ def get_account_context(
 
 AuthenticatedUserDep = Annotated[User, Depends(get_authenticated_user)]
 AuthTokenDep = Annotated[str, Depends(get_auth_token)]
-AccountContextDep = Annotated[Account, Depends(get_account_context)]
+AuthenticatedAccountDep = Annotated[Account, Depends(get_authenticated_account)]
