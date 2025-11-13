@@ -11,6 +11,6 @@ __all__ = [
 	"AccountService",
 	"UserService",
 	"ApplicationService",
-  "FavoriteService
+	"FavoriteService",
 ]
 
