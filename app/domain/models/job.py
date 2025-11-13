@@ -9,6 +9,7 @@ from app.domain.models.fields import created_at_field, updated_at_field
 if TYPE_CHECKING:
     from app.domain.models.account import Account
     from app.domain.models.favorite import Favorite
+    from app.domain.models.application import Application
 
 
 class Job(SQLModel, table=True):
@@ -28,6 +29,7 @@ class Job(SQLModel, table=True):
 
     account: "Account" = Relationship(back_populates="jobs")
     favorites: List["Favorite"] = Relationship(back_populates="job")
+    applications: List["Application"] = Relationship(back_populates="job")
 
 
 class JobUpdate(SQLModel):
