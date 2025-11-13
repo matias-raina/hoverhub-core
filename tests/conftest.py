@@ -1,9 +1,3 @@
-"""
-Test configuration and fixtures for FastAPI tests.
-"""
-
-# Test database URL - using SQLite file for tests (shared across connections)
-# Using a temporary file that gets cleaned up
 import tempfile
 from typing import Generator
 from unittest.mock import MagicMock
@@ -15,14 +9,6 @@ from sqlmodel import Session, SQLModel, create_engine
 from app.config.cache import get_cache
 from app.config.database import get_db
 from app.config.settings import Environment, Settings, get_settings
-from app.domain.models.account import Account
-from app.domain.models.application import Application
-from app.domain.models.favorite import Favorite
-from app.domain.models.job import Job
-from app.domain.models.session import UserSession
-
-# Import all models so SQLModel can create tables
-from app.domain.models.user import User
 from app.main import app
 
 # Create a temporary database file
@@ -60,6 +46,9 @@ def db_session() -> Generator[Session, None, None]:
 def override_get_db(db_session: Session):
     """
     Override get_db dependency to use test database.
+
+    Note: The parameter name 'db_session' must match the fixture name for pytest
+    dependency injection to work. This is intentional pytest behavior, not a bug.
     """
 
     def _get_db():
@@ -114,9 +103,9 @@ def test_settings():
 
 @pytest.fixture(scope="function")
 def client(
-    override_get_db,  # noqa: ARG001 - pytest fixture dependency (sets up db override)
-    mock_cache,  # noqa: ARG001 - pytest fixture dependency (sets up cache mock)
-    test_settings,  # noqa: ARG001 - pytest fixture dependency (sets up test settings)
+    override_get_db,  # pytest fixture dependency (sets up db override)
+    mock_cache,  # pytest fixture dependency (sets up cache mock)
+    test_settings,  # pytest fixture dependency (sets up test settings)
 ) -> TestClient:
     """
     Create a test client with all dependencies overridden.
