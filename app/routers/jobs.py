@@ -1,6 +1,7 @@
+from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, status
+from fastapi import APIRouter, Query, status
 
 from app.config.dependencies import AuthenticatedAccountDep, JobServiceDep
 from app.dto.job import CreateJobDto, UpdateJobDto
@@ -76,20 +77,24 @@ async def get_job(
 async def list_jobs(
     _: AuthenticatedAccountDep,
     job_service: JobServiceDep,
-    offset: int = 0,
-    limit: int = 100,
+    offset: Annotated[int, Query(ge=0, description="Number of items to skip")] = 0,
+    limit: Annotated[
+        int, Query(ge=1, le=100, description="Maximum number of items to return")
+    ] = 100,
 ):
     """
     List all jobs with pagination.
 
+    Results are ordered by creation date (newest first).
+
     Args:
         _: The authenticated account from authentication
         job_service: Injected job service
-        offset: The number of items to skip before starting to collect the result set
-        limit: The maximum number of items to return
+        offset: The number of items to skip before starting to collect the result set (min: 0)
+        limit: The maximum number of items to return (min: 1, max: 100)
 
     Returns:
-        A list of jobs
+        A list of jobs ordered by creation date (newest first)
     """
 
     jobs = job_service.get_all(offset=offset, limit=limit)

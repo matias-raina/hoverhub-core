@@ -16,7 +16,7 @@ class IJobService(ABC):
         """Retrieve a job by ID."""
 
     @abstractmethod
-    def get_all(self, offset: int, limit: int) -> Sequence[Job]:
+    def get_all(self, offset: int = 0, limit: int = 100) -> Sequence[Job]:
         """Retrieve all jobs."""
 
     @abstractmethod

@@ -23,8 +23,12 @@ class JobRepository(IJobRepository):
         return self.session.get(Job, job_id)
 
     def get_all(self, offset: int = 0, limit: int = 100) -> Sequence[Job]:
-        """Retrieve all job entries."""
-        return list(self.session.exec(select(Job).offset(offset).limit(limit)).all())
+        """Retrieve all job entries ordered by creation date (newest first)."""
+        return list(
+            self.session.exec(
+                select(Job).order_by(Job.created_at.desc()).offset(offset).limit(limit)
+            ).all()
+        )
 
     def update(self, job_id: UUID, job: JobUpdate) -> Job | None:
         """Update an existing job entry."""

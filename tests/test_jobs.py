@@ -3,12 +3,7 @@ from uuid import uuid4
 
 from fastapi import status
 
-from tests.utils import (
-    create_test_account,
-    create_test_job,
-    create_test_user,
-    get_account_headers,
-)
+from tests.utils import create_test_account, create_test_job, create_test_user, get_account_headers
 
 
 class TestCreateJob:
@@ -220,7 +215,7 @@ class TestListJobs:
     """Tests for GET /jobs/"""
 
     def test_list_jobs_success(self, client, db_session):
-        """Test listing jobs"""
+        """Test listing jobs with authentication"""
         # Create multiple jobs
         user = create_test_user(db_session)
         account1 = create_test_account(db_session, user.id, name="Account 1")
@@ -230,7 +225,15 @@ class TestListJobs:
         create_test_job(db_session, account2.id, title="Job 2")
         create_test_job(db_session, account1.id, title="Job 3")
 
-        response = client.get("/jobs/")
+        # Signin to get a token
+        signin_response = client.post(
+            "/auth/signin",
+            json={"email": user.email, "password": "testpassword123"},
+        )
+        token = signin_response.json()["access_token"]
+        headers = get_account_headers(token, account1.id)
+
+        response = client.get("/jobs/", headers=headers)
         assert response.status_code == status.HTTP_200_OK
         data = response.json()
         assert isinstance(data, list)
@@ -245,34 +248,160 @@ class TestListJobs:
             assert "account_id" in job
 
     def test_list_jobs_pagination(self, client, db_session):
-        """Test listing jobs with pagination"""
+        """Test listing jobs with pagination and authentication"""
         # Create multiple jobs
         user = create_test_user(db_session)
         account = create_test_account(db_session, user.id)
 
         # Create 5 jobs
+        job_ids = []
         for i in range(5):
-            create_test_job(db_session, account.id, title=f"Job {i}")
+            job = create_test_job(db_session, account.id, title=f"Job {i}")
+            job_ids.append(job.id)
 
-        # Test with offset and limit
-        response = client.get("/jobs/?offset=0&limit=2")
+        # Signin to get a token
+        signin_response = client.post(
+            "/auth/signin",
+            json={"email": user.email, "password": "testpassword123"},
+        )
+        token = signin_response.json()["access_token"]
+        headers = get_account_headers(token, account.id)
+
+        # Test with offset and limit - first page
+        response = client.get("/jobs/?offset=0&limit=2", headers=headers)
         assert response.status_code == status.HTTP_200_OK
         data = response.json()
-        assert len(data) <= 2
+        assert len(data) == 2
+        # Verify ordering (newest first)
+        assert data[0]["title"] == "Job 4"  # Most recent
+        assert data[1]["title"] == "Job 3"
 
-        # Test with offset
-        response = client.get("/jobs/?offset=2&limit=2")
+        # Test with offset - second page
+        response = client.get("/jobs/?offset=2&limit=2", headers=headers)
         assert response.status_code == status.HTTP_200_OK
         data = response.json()
-        assert len(data) <= 2
+        assert len(data) == 2
+        # Verify ordering continues correctly
+        assert data[0]["title"] == "Job 2"
+        assert data[1]["title"] == "Job 1"
 
-    def test_list_jobs_empty(self, client):
-        """Test listing jobs when no jobs exist"""
-        response = client.get("/jobs/")
+        # Test with offset - third page (partial)
+        response = client.get("/jobs/?offset=4&limit=2", headers=headers)
+        assert response.status_code == status.HTTP_200_OK
+        data = response.json()
+        assert len(data) == 1  # Only one job remaining
+        assert data[0]["title"] == "Job 0"
+
+        # Test with offset beyond available items
+        response = client.get("/jobs/?offset=10&limit=2", headers=headers)
+        assert response.status_code == status.HTTP_200_OK
+        data = response.json()
+        assert len(data) == 0  # Empty result
+
+    def test_list_jobs_empty(self, client, db_session):
+        """Test listing jobs when no jobs exist with authentication"""
+        user = create_test_user(db_session)
+        account = create_test_account(db_session, user.id)
+
+        # Signin to get a token
+        signin_response = client.post(
+            "/auth/signin",
+            json={"email": user.email, "password": "testpassword123"},
+        )
+        token = signin_response.json()["access_token"]
+        headers = get_account_headers(token, account.id)
+
+        response = client.get("/jobs/", headers=headers)
         assert response.status_code == status.HTTP_200_OK
         data = response.json()
         assert isinstance(data, list)
         # Should be empty or contain jobs from previous tests (depending on test isolation)
+
+    def test_list_jobs_requires_authentication(self, client, db_session):
+        """Test that listing jobs requires authentication"""
+        # Create jobs without authentication
+        user = create_test_user(db_session)
+        account = create_test_account(db_session, user.id)
+        create_test_job(db_session, account.id, title="Job 1")
+
+        # Try to list jobs without authentication headers
+        response = client.get("/jobs/")
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    def test_list_jobs_invalid_account_id_header(self, client, db_session):
+        """Test listing jobs with invalid account ID format in header"""
+        user = create_test_user(db_session)
+
+        # Signin to get a token
+        signin_response = client.post(
+            "/auth/signin",
+            json={"email": user.email, "password": "testpassword123"},
+        )
+        token = signin_response.json()["access_token"]
+
+        # Use invalid UUID format in header
+        headers = {
+            "Authorization": f"Bearer {token}",
+            "x-account-id": "invalid-uuid-format",
+        }
+
+        response = client.get("/jobs/", headers=headers)
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert "Invalid account ID format" in response.json()["detail"]
+
+    def test_list_jobs_missing_account_id_header(self, client, db_session):
+        """Test listing jobs with missing x-account-id header"""
+        user = create_test_user(db_session)
+
+        # Signin to get a token
+        signin_response = client.post(
+            "/auth/signin",
+            json={"email": user.email, "password": "testpassword123"},
+        )
+        token = signin_response.json()["access_token"]
+
+        # Use only Authorization header without x-account-id
+        headers = {"Authorization": f"Bearer {token}"}
+
+        response = client.get("/jobs/", headers=headers)
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
+
+    def test_list_jobs_pagination_validation(self, client, db_session):
+        """Test pagination parameter validation"""
+        user = create_test_user(db_session)
+        account = create_test_account(db_session, user.id)
+
+        # Signin to get a token
+        signin_response = client.post(
+            "/auth/signin",
+            json={"email": user.email, "password": "testpassword123"},
+        )
+        token = signin_response.json()["access_token"]
+        headers = get_account_headers(token, account.id)
+
+        # Test negative offset
+        response = client.get("/jobs/?offset=-1&limit=10", headers=headers)
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
+
+        # Test zero limit
+        response = client.get("/jobs/?offset=0&limit=0", headers=headers)
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
+
+        # Test negative limit
+        response = client.get("/jobs/?offset=0&limit=-1", headers=headers)
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
+
+        # Test limit exceeding maximum (100)
+        response = client.get("/jobs/?offset=0&limit=101", headers=headers)
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
+
+        # Test valid maximum limit
+        response = client.get("/jobs/?offset=0&limit=100", headers=headers)
+        assert response.status_code == status.HTTP_200_OK
+
+        # Test valid minimum limit
+        response = client.get("/jobs/?offset=0&limit=1", headers=headers)
+        assert response.status_code == status.HTTP_200_OK
 
 
 class TestUpdateJob:
