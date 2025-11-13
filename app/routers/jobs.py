@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from fastapi import APIRouter, status
+from fastapi import APIRouter, HTTPException, status
 
 from app.config.dependencies import JobServiceDep
 from app.domain.models.job import Job, JobUpdate
@@ -54,6 +54,11 @@ async def get_job(
         Job information
     """
     job = job_service.read_job(job_id)
+    if not job:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Job with ID {job_id} not found",
+        )
     return {
         "id": job.id,
         "account_id": job.account_id,
@@ -121,6 +126,11 @@ async def update_job(
         The updated job information
     """
     job = job_service.update_job(job_id, job_data)
+    if not job:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Job with ID {job_id} not found",
+        )
     return {
         "id": job.id,
         "account_id": job.account_id,

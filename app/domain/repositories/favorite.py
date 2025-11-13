@@ -1,4 +1,4 @@
-from typing import Sequence, Optional
+from collections.abc import Sequence
 from uuid import UUID
 
 from fastapi import Query
@@ -22,7 +22,7 @@ class FavoriteRepository(IFavoriteRepository):
         self.session.refresh(favorite)
         return favorite
 
-    def get_by_id(self, favorite_id: UUID) -> Optional[Favorite]:
+    def get_by_id(self, favorite_id: UUID) -> Favorite | None:
         """Retrieve a favorite entry by ID."""
         return self.session.get(Favorite, favorite_id)
 
@@ -31,7 +31,9 @@ class FavoriteRepository(IFavoriteRepository):
         statement = select(Favorite).where(Favorite.account_id == account_id)
         return self.session.exec(statement).all()
 
-    def get_all(self, offset: int = 0, limit: int = Query(default=100, le=100)) -> Sequence[Favorite]:
+    def get_all(
+        self, offset: int = 0, limit: int = Query(default=100, le=100)
+    ) -> Sequence[Favorite]:
         """Retrieve all favorite entries."""
         return self.session.exec(select(Favorite).offset(offset).limit(limit)).all()
 

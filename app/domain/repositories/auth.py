@@ -1,16 +1,11 @@
 import uuid
-from datetime import datetime, timedelta, timezone
-from typing import Tuple
+from datetime import UTC, datetime, timedelta
 
 import jwt
 from pwdlib import PasswordHash
 
 from app.config.settings import Settings
-from app.domain.repositories.interfaces.auth import (
-    IAuthRepository,
-    JwtTokenPayload,
-    JwtTokenType,
-)
+from app.domain.repositories.interfaces.auth import IAuthRepository, JwtTokenType
 
 
 class AuthRepository(IAuthRepository):
@@ -26,23 +21,18 @@ class AuthRepository(IAuthRepository):
     def hash_password(self, plain_password: str) -> str:
         return self.hasher.hash(plain_password)
 
-    def decode_token(self, token: str) -> JwtTokenPayload:
-        return jwt.decode(
-            token, self.settings.secret_key, algorithms=[self.settings.algorithm]
-        )
+    def decode_token(self, token: str) -> dict:
+        """Decode a token and return raw payload dictionary."""
+        return jwt.decode(token, self.settings.secret_key, algorithms=[self.settings.algorithm])  # type: ignore[no-any-return]
 
-    def create_token(self, data: dict) -> Tuple[str, str, datetime]:
-        iat = datetime.now(timezone.utc)
+    def create_token(self, data: dict) -> tuple[str, str, datetime]:
+        iat = datetime.now(UTC)
 
         access_token_jti = str(uuid.uuid4())
         refresh_token_jti = str(uuid.uuid4())
 
-        access_token_exp = iat + timedelta(
-            minutes=self.settings.access_token_expire_minutes
-        )
-        refresh_token_exp = iat + timedelta(
-            minutes=self.settings.refresh_token_expire_minutes
-        )
+        access_token_exp = iat + timedelta(minutes=self.settings.access_token_expire_minutes)
+        refresh_token_exp = iat + timedelta(minutes=self.settings.refresh_token_expire_minutes)
 
         access_token = jwt.encode(
             {

@@ -1,4 +1,4 @@
-from typing import List, Optional
+from datetime import date
 from uuid import UUID
 
 from fastapi import HTTPException, Query, status
@@ -14,9 +14,17 @@ class JobService(IJobService):
 
     def create_job(self, job: Job) -> Job:
         """Create a new job."""
+        # Ensure account_id is a UUID object (SQLModel/Pydantic might pass string)
+        if isinstance(job.account_id, str):
+            job.account_id = UUID(job.account_id)
+        # Ensure dates are date objects (SQLModel/Pydantic might pass strings)
+        if isinstance(job.start_date, str):
+            job.start_date = date.fromisoformat(job.start_date)
+        if isinstance(job.end_date, str):
+            job.end_date = date.fromisoformat(job.end_date)
         return self.job_repository.create(job)
 
-    def read_job(self, job_id: UUID) -> Optional[Job]:
+    def read_job(self, job_id: UUID) -> Job | None:
         """Retrieve a job by ID."""
         job = self.job_repository.read_job(job_id)
         if not job:
@@ -26,13 +34,11 @@ class JobService(IJobService):
             )
         return job
 
-    def read_jobs(
-        self, offset: int = 0, limit: int = Query(default=100, le=100)
-    ) -> List[Job]:
+    def read_jobs(self, offset: int = 0, limit: int = Query(default=100, le=100)) -> list[Job]:
         """Retrieve all jobs."""
         return self.job_repository.read_jobs(offset=offset, limit=limit)
 
-    def update_job(self, job_id: UUID, job: JobUpdate) -> Optional[Job]:
+    def update_job(self, job_id: UUID, job: JobUpdate) -> Job | None:
         """Update an existing job."""
         updated_job = self.job_repository.update(job_id, job)
         if not updated_job:

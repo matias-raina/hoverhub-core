@@ -1,4 +1,3 @@
-from typing import List, Optional
 from uuid import UUID
 
 from sqlmodel import Session, select
@@ -18,25 +17,20 @@ class ApplicationRepository(IApplicationRepository):
         self.session.refresh(application)
         return application
 
-    def get_by_id(self, application_id: UUID) -> Optional[Application]:
+    def get_by_id(self, application_id: UUID) -> Application | None:
         """Retrieve an application by ID."""
         return self.session.get(Application, application_id)
 
-    def list_by_job(
-        self, job_id: UUID, offset: int = 0, limit: int = 100
-    ) -> List[Application]:
+    def list_by_job(self, job_id: UUID, offset: int = 0, limit: int = 100) -> list[Application]:
         """List applications for a given job."""
         statement = (
-            select(Application)
-            .where(Application.job_id == job_id)
-            .offset(offset)
-            .limit(limit)
+            select(Application).where(Application.job_id == job_id).offset(offset).limit(limit)
         )
-        return self.session.exec(statement).all()
+        return list(self.session.exec(statement).all())
 
     def list_by_account(
         self, account_id: UUID, offset: int = 0, limit: int = 100
-    ) -> List[Application]:
+    ) -> list[Application]:
         """List applications submitted by an account."""
         statement = (
             select(Application)
@@ -44,11 +38,9 @@ class ApplicationRepository(IApplicationRepository):
             .offset(offset)
             .limit(limit)
         )
-        return self.session.exec(statement).all()
+        return list(self.session.exec(statement).all())
 
-    def update(
-        self, application_id: UUID, application: ApplicationUpdate
-    ) -> Optional[Application]:
+    def update(self, application_id: UUID, application: ApplicationUpdate) -> Application | None:
         """Update an existing application entry."""
         db_app = self.get_by_id(application_id)
         if not db_app:

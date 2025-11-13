@@ -1,4 +1,3 @@
-from typing import Optional
 from uuid import UUID
 
 from sqlmodel import Session, select
@@ -18,12 +17,12 @@ class UserRepository(IUserRepository):
         self.session.refresh(user)
         return user
 
-    def get_by_email(self, email: str) -> Optional[User]:
+    def get_by_email(self, email: str) -> User | None:
         """Retrieve a user by email."""
         statement = select(User).where(User.email == email)
         return self.session.exec(statement).first()
 
-    def get_by_id(self, user_id: UUID) -> Optional[User]:
+    def get_by_id(self, user_id: UUID) -> User | None:
         """Retrieve a user by ID."""
         return self.session.get(User, user_id)
 

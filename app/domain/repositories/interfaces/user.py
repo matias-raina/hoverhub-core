@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from typing import Optional
 from uuid import UUID
 
 from app.domain.models.user import User
@@ -11,11 +10,11 @@ class IUserRepository(ABC):
         """Create a new user in the database."""
 
     @abstractmethod
-    def get_by_email(self, email: str) -> Optional[User]:
+    def get_by_email(self, email: str) -> User | None:
         """Retrieve a user by email."""
 
     @abstractmethod
-    def get_by_id(self, user_id: UUID) -> Optional[User]:
+    def get_by_id(self, user_id: UUID) -> User | None:
         """Retrieve a user by ID."""
 
     @abstractmethod

@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from typing import List
 from uuid import UUID
 
 from app.domain.models.application import Application
@@ -8,19 +7,15 @@ from app.dto.application import CreateApplicationDto, UpdateApplicationStatusDto
 
 class IApplicationService(ABC):
     @abstractmethod
-    def apply_to_job(
-        self, user_id: UUID, job_id: UUID, dto: CreateApplicationDto
-    ) -> Application:
+    def apply_to_job(self, user_id: UUID, job_id: UUID, dto: CreateApplicationDto) -> Application:
         """Create an application for a job by a droner account belonging to user."""
 
     @abstractmethod
-    def list_applications_for_job(
-        self, user_id: UUID, job_id: UUID
-    ) -> List[Application]:
+    def list_applications_for_job(self, user_id: UUID, job_id: UUID) -> list[Application]:
         """List applications for a job (only if user owns employer account of the job)."""
 
     @abstractmethod
-    def list_applications_for_user(self, user_id: UUID) -> List[Application]:
+    def list_applications_for_user(self, user_id: UUID) -> list[Application]:
         """List all applications submitted by any droner account of the user."""
 
     @abstractmethod
