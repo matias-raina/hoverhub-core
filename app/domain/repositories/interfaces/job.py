@@ -18,7 +18,7 @@ class IJobRepository(ABC):
         """Retrieve all job entries."""
 
     @abstractmethod
-    def update(self, job_id: UUID, job: JobUpdate) -> Job:
+    def update(self, job_id: UUID, job: JobUpdate) -> Job | None:
         """Update an existing job entry."""
 
     @abstractmethod

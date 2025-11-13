@@ -12,7 +12,7 @@ class IFavoriteService(ABC):
         """Create a new favorite entry."""
 
     @abstractmethod
-    def get_favorite_by_id(self, favorite_id: UUID) -> Favorite | None:
+    def get_favorite_by_id(self, favorite_id: UUID) -> Favorite:
         """Retrieve a favorite entry by ID."""
 
     @abstractmethod

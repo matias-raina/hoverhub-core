@@ -23,7 +23,7 @@ class AuthRepository(IAuthRepository):
 
     def decode_token(self, token: str) -> dict:
         """Decode a token and return raw payload dictionary."""
-        return jwt.decode(token, self.settings.secret_key, algorithms=[self.settings.algorithm])
+        return jwt.decode(token, self.settings.secret_key, algorithms=[self.settings.algorithm])  # type: ignore[no-any-return]
 
     def create_token(self, data: dict) -> tuple[str, str, datetime]:
         iat = datetime.now(UTC)

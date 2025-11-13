@@ -18,7 +18,7 @@ class FavoriteService(IFavoriteService):
         favorite = Favorite(account_id=account_id, job_id=dto.job_id)
         return self.favorite_repository.create(favorite)
 
-    def get_favorite_by_id(self, favorite_id: UUID) -> Favorite | None:
+    def get_favorite_by_id(self, favorite_id: UUID) -> Favorite:
         """Retrieve a favorite entry by ID."""
         favorite = self.favorite_repository.get_by_id(favorite_id)
         if not favorite:

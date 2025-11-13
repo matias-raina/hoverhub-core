@@ -53,13 +53,13 @@ class UserService(IUserService):
 
     def delete_user(self, user_id: UUID) -> bool:
         """Delete a user."""
-        success = self.user_repository.delete(user_id)
+        success = self.user_repository.delete(user_id)  # type: ignore[attr-defined]
         if not success:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"User with ID {user_id} not found",
             )
-        return success
+        return bool(success)
 
     def get_user_sessions(self, user_id: UUID) -> list[UserSession]:
         """Get all sessions for a user."""

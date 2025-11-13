@@ -24,9 +24,9 @@ class JobRepository(IJobRepository):
 
     def read_jobs(self, offset: int = 0, limit: int = Query(default=100, le=100)) -> list[Job]:
         """Retrieve all job entries."""
-        return self.session.exec(select(Job).offset(offset).limit(limit)).all()
+        return list(self.session.exec(select(Job).offset(offset).limit(limit)).all())
 
-    def update(self, job_id: UUID, job: JobUpdate) -> Job:
+    def update(self, job_id: UUID, job: JobUpdate) -> Job | None:
         """Update an existing job entry."""
         db_job = self.read_job(job_id)
         if not db_job:

@@ -40,7 +40,7 @@ class AuthService(IAuthService):
         self.account_repository = account_repository
 
     def _decode_token_safely(
-        self, token: str, expected_type: JwtTokenType = None
+        self, token: str, expected_type: JwtTokenType | None = None
     ) -> JwtTokenPayload:
         """Decode token with proper error handling and automatic UUID conversion."""
         try:

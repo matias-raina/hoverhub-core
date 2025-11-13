@@ -29,10 +29,10 @@ class UserSession(SQLModel, table=True):
         """Check if the session has expired."""
         now = datetime.now(UTC)
         # At runtime, expires_at is always a datetime instance
-        expires_at_dt = cast(datetime, self.expires_at)
+        expires_at_dt = self.expires_at
 
         # Ensure expires_at is timezone-aware for comparison
-        if expires_at_dt.tzinfo is None:  # type: ignore[attr-defined]
-            expires_at_dt = expires_at_dt.replace(tzinfo=UTC)  # type: ignore[attr-defined]
+        if expires_at_dt.tzinfo is None:
+            expires_at_dt = expires_at_dt.replace(tzinfo=UTC)
 
         return now >= expires_at_dt

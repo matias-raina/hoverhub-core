@@ -26,7 +26,7 @@ class ApplicationRepository(IApplicationRepository):
         statement = (
             select(Application).where(Application.job_id == job_id).offset(offset).limit(limit)
         )
-        return self.session.exec(statement).all()
+        return list(self.session.exec(statement).all())
 
     def list_by_account(
         self, account_id: UUID, offset: int = 0, limit: int = 100
@@ -38,7 +38,7 @@ class ApplicationRepository(IApplicationRepository):
             .offset(offset)
             .limit(limit)
         )
-        return self.session.exec(statement).all()
+        return list(self.session.exec(statement).all())
 
     def update(self, application_id: UUID, application: ApplicationUpdate) -> Application | None:
         """Update an existing application entry."""
