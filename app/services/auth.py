@@ -11,11 +11,7 @@ from app.domain.models.account import Account
 from app.domain.models.session import UserSession
 from app.domain.models.user import User
 from app.domain.repositories.interfaces.account import IAccountRepository
-from app.domain.repositories.interfaces.auth import (
-    IAuthRepository,
-    JwtTokenPayload,
-    JwtTokenType,
-)
+from app.domain.repositories.interfaces.auth import IAuthRepository, JwtTokenPayload, JwtTokenType
 from app.domain.repositories.interfaces.session import ISessionRepository
 from app.domain.repositories.interfaces.user import IUserRepository
 from app.dto.auth import SigninDTO, SignupDTO
@@ -242,6 +238,12 @@ class AuthService(IAuthService):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="You are not authorized to access this account",
+            )
+
+        if not account.is_active:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Your account has been deactivated",
             )
 
         return account

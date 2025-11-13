@@ -74,6 +74,7 @@ async def get_job(
 
 @router.get("/", status_code=status.HTTP_200_OK)
 async def list_jobs(
+    _: AuthenticatedAccountDep,
     job_service: JobServiceDep,
     offset: int = 0,
     limit: int = 100,
@@ -82,6 +83,7 @@ async def list_jobs(
     List all jobs with pagination.
 
     Args:
+        _: The authenticated account from authentication
         job_service: Injected job service
         offset: The number of items to skip before starting to collect the result set
         limit: The maximum number of items to return
@@ -89,6 +91,7 @@ async def list_jobs(
     Returns:
         A list of jobs
     """
+
     jobs = job_service.get_all(offset=offset, limit=limit)
     return [
         {
