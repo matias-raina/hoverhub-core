@@ -1,0 +1,43 @@
+[tool.ruff]
+# Line length
+line-length = 100
+# Target Python version
+target-version = "py311"
+
+[tool.ruff.format]
+# Enable Ruff's formatter (similar to Black)
+quote-style = "double"
+indent-style = "space"
+
+[tool.ruff.lint]
+# Enable common rule sets
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade
+]
+ignore = [
+    "E501",  # line too long (handled by formatter)
+    "F403",  # star imports (used in migrations/env.py)
+]
+
+[tool.ruff.lint.isort]
+# Import sorting configuration
+known-first-party = ["app"]
+
+[tool.black]
+# Black formatter configuration
+line-length = 100
+target-version = ['py311']
+include = '\.pyi?$'
+
+[tool.isort]
+# isort configuration (if using separately)
+profile = "black"
+line_length = 100
+known_first_party = ["app"]
+
