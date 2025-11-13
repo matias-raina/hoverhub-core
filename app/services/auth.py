@@ -42,9 +42,9 @@ class AuthService(IAuthService):
     def _decode_token_safely(
         self, token: str, expected_type: JwtTokenType = None
     ) -> JwtTokenPayload:
-        """Decode token with proper error handling."""
+        """Decode token with proper error handling and automatic UUID conversion."""
         try:
-            payload = self.auth_repository.decode_token(token)
+            raw_payload = self.auth_repository.decode_token(token)
         except jwt.ExpiredSignatureError as exc:
             token_type = expected_type or JwtTokenType.ACCESS
             raise HTTPException(
@@ -60,8 +60,19 @@ class AuthService(IAuthService):
                 headers={"WWW-Authenticate": "Bearer"},
             ) from exc
 
+        # Convert to JwtTokenPayload model (automatically converts sub and sid to UUID)
+        try:
+            payload = JwtTokenPayload(**raw_payload)
+        except Exception as exc:
+            token_type = expected_type or JwtTokenType.ACCESS
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail=f"Invalid {token_type.value}",
+                headers={"WWW-Authenticate": "Bearer"},
+            ) from exc
+
         # Verify token type if expected_type is specified
-        if expected_type and payload.get("type") != expected_type.value:
+        if expected_type and payload.type != expected_type:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid token type",
@@ -84,15 +95,16 @@ class AuthService(IAuthService):
         required_keys: List[Literal["sub", "sid", "type", "iat", "exp", "jti"]],
     ) -> None:
         """Validate that required keys exist in token payload."""
+        # JwtTokenPayload model ensures all fields exist, so we just check if they're not None
         for key in required_keys:
-            if key not in payload:
+            if not hasattr(payload, key) or getattr(payload, key) is None:
                 raise HTTPException(
                     status_code=status.HTTP_401_UNAUTHORIZED,
                     detail=f"Missing required key: {key}",
                     headers={"WWW-Authenticate": "Bearer"},
                 )
 
-    def _validate_session(self, session_id: str) -> UserSession:
+    def _validate_session(self, session_id: UUID) -> UserSession:
         """Validate session exists, is active, and not expired."""
         session = self.session_repository.get_by_id(session_id)
 
@@ -125,7 +137,7 @@ class AuthService(IAuthService):
             if ttl > 0:
                 self.cache.setex(f"blacklist:{jti}", ttl, "1")
 
-    def _validate_user_exists_and_active(self, user_id: str) -> User:
+    def _validate_user_exists_and_active(self, user_id: UUID) -> User:
         """Validate user exists and is active."""
         user = self.user_repository.get_by_id(user_id)
 
@@ -206,11 +218,11 @@ class AuthService(IAuthService):
         """Get authenticated user from access token."""
         payload = self.authorize(token)
 
-        self._check_token_blacklist(payload["jti"])
+        self._check_token_blacklist(payload.jti)
         self._validate_token_payload(payload, ["sub", "sid"])
-        self._validate_session(payload["sid"])
+        self._validate_session(payload.sid)
 
-        return self._validate_user_exists_and_active(payload["sub"])
+        return self._validate_user_exists_and_active(payload.sub)
 
     def get_authenticated_account(self, token: str, account_id: UUID) -> Account:
         """
@@ -244,16 +256,16 @@ class AuthService(IAuthService):
             refresh_token, expected_type=JwtTokenType.REFRESH
         )
 
-        self._check_token_blacklist(payload["jti"])
+        self._check_token_blacklist(payload.jti)
         self._validate_token_payload(payload, ["sub", "sid"])
 
-        session = self._validate_session(payload["sid"])
+        session = self._validate_session(payload.sid)
 
-        self._blacklist_token(payload["jti"], payload["exp"])
+        self._blacklist_token(payload.jti, payload.exp_timestamp)
 
         access_token, new_refresh_token, refresh_token_exp = (
             self.auth_repository.create_token(
-                {"sub": payload["sub"], "sid": payload["sid"]}
+                {"sub": str(payload.sub), "sid": str(payload.sid)}
             )
         )
 
@@ -267,6 +279,6 @@ class AuthService(IAuthService):
 
         payload = self.authorize(token)
 
-        self.session_repository.deactivate(payload["sid"])
-        self._blacklist_token(payload["jti"], payload["exp"])
+        self.session_repository.deactivate(payload.sid)
+        self._blacklist_token(payload.jti, payload.exp_timestamp)
         return True

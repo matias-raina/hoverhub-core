@@ -1,3 +1,4 @@
+from datetime import date
 from typing import List, Optional
 from uuid import UUID
 
@@ -14,6 +15,14 @@ class JobService(IJobService):
 
     def create_job(self, job: Job) -> Job:
         """Create a new job."""
+        # Ensure account_id is a UUID object (SQLModel/Pydantic might pass string)
+        if isinstance(job.account_id, str):
+            job.account_id = UUID(job.account_id)
+        # Ensure dates are date objects (SQLModel/Pydantic might pass strings)
+        if isinstance(job.start_date, str):
+            job.start_date = date.fromisoformat(job.start_date)
+        if isinstance(job.end_date, str):
+            job.end_date = date.fromisoformat(job.end_date)
         return self.job_repository.create(job)
 
     def read_job(self, job_id: UUID) -> Optional[Job]:
