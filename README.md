@@ -159,22 +159,23 @@ pip install -r requirements.txt
 Crear un archivo `.env` en la raíz del proyecto:
 
 ```env
+# Aplicación
+ENVIRONMENT="development"
+HOST="0.0.0.0"
+PORT="8000"
+
 # Base de datos
-DB_CONNECTION_STRING=postgresql+asyncpg://postgres:hoverhub@localhost:5432/hoverhub
+DB_CONNECTION_STRING="postgresql://postgres:hoverhub@localhost:5432/hoverhub"
 
 # Redis
-CACHE_CONNECTION_STRING=redis://localhost:6379/0
+CACHE_CONNECTION_STRING="redis://localhost:6379"
 
 # JWT
-SECRET_KEY=tu-clave-secreta-muy-segura-aqui
-ALGORITHM=HS256
-ACCESS_TOKEN_EXPIRE_MINUTES=30
-REFRESH_TOKEN_EXPIRE_MINUTES=10080  # 7 días
+SECRET_KEY="3c5b3affe2b910d64e00ab92783c1bbf08b8976253e788ddbdf0d41f83540e4a"
+ALGORITHM="HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES="15"
+REFRESH_TOKEN_EXPIRE_MINUTES="1440"
 
-# Aplicación
-ENVIRONMENT=development
-HOST=0.0.0.0
-PORT=8000
 ```
 
 ### 5. Iniciar servicios con Docker
