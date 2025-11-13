@@ -6,3 +6,9 @@ logs/
 *.log
 *.tmp
 .vscode/
+
+# Testing & Coverage
+.coverage
+.coverage.*
+htmlcov/
+.pytest_cache/
