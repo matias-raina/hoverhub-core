@@ -1,0 +1,53 @@
+services:
+  # Web Service - HoverHub API
+  - type: web
+    name: hoverhub-api
+    runtime: docker
+    # Option 1: Use published Docker image (recommended if already published)
+    dockerImage: lucasach/hoverhub-api:latest
+    # Option 2: Build from Dockerfile (uncomment if you prefer to build on Render)
+    # dockerfilePath: ./Dockerfile
+    # dockerContext: .
+    dockerCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT --workers 4 --log-level info
+    plan: free  # Options: 'free', 'starter' ($7/mo), 'standard' ($25/mo), 'pro' ($85/mo)
+    region: oregon  # Change to your preferred region
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: HOST
+        value: 0.0.0.0
+      - key: PORT
+        fromService:
+          type: web
+          name: hoverhub-api
+          property: port
+      - key: DB_CONNECTION_STRING
+        fromDatabase:
+          name: hoverhub-db
+          property: connectionString
+      # Redis connection (optional - comment out if not using Redis on free tier)
+      - key: CACHE_CONNECTION_STRING
+        fromService:
+          type: redis
+          name: hoverhub-redis
+          property: connectionString
+      # Alternative: Use external Redis (e.g., Upstash free tier)
+      # - key: CACHE_CONNECTION_STRING
+      #   value: redis://your-external-redis-url
+      - key: SECRET_KEY
+        generateValue: true  # Render will generate a secure key
+      - key: ALGORITHM
+        value: HS256
+      - key: ACCESS_TOKEN_EXPIRE_MINUTES
+        value: 30
+      - key: REFRESH_TOKEN_EXPIRE_MINUTES
+        value: 10080
+    healthCheckPath: /health
+
+services:
+  # Redis Cache (Note: Free tier may not be available for Redis)
+  - type: redis
+    name: hoverhub-redis
+    plan: free  # Options: 'free' (expires after 30 days), 'starter' ($7/mo), 'standard' ($20/mo)
+    region: oregon  # Should match web service region
+    maxmemoryPolicy: allkeys-lru
