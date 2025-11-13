@@ -1,7 +1,6 @@
 from typing import Sequence, Optional
 from uuid import UUID
 
-from fastapi import Query
 from sqlmodel import Session, select
 
 from app.domain.models.favorite import Favorite
@@ -31,7 +30,7 @@ class FavoriteRepository(IFavoriteRepository):
         statement = select(Favorite).where(Favorite.account_id == account_id)
         return self.session.exec(statement).all()
 
-    def get_all(self, offset: int = 0, limit: int = Query(default=100, le=100)) -> Sequence[Favorite]:
+    def get_all(self, offset: int = 0, limit: int = 100) -> Sequence[Favorite]:
         """Retrieve all favorite entries."""
         return self.session.exec(select(Favorite).offset(offset).limit(limit)).all()
 

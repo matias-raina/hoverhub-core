@@ -1,7 +1,6 @@
-from typing import List, Optional
+from typing import Optional, Sequence
 from uuid import UUID
 
-from fastapi import Query
 from sqlmodel import Session, select
 
 from app.domain.models.job import Job, JobUpdate
@@ -19,19 +18,19 @@ class JobRepository(IJobRepository):
         self.session.refresh(job)
         return job
 
-    def read_job(self, job_id: UUID) -> Optional[Job]:
+    def get_by_id(self, job_id: UUID) -> Optional[Job]:
         """Retrieve a job entry by ID."""
         return self.session.get(Job, job_id)
 
-    def read_jobs(
-        self, offset: int = 0, limit: int = Query(default=100, le=100)
-    ) -> List[Job]:
+    def get_all(
+        self, offset: int = 0, limit: int = 100
+    ) -> Sequence[Job]:
         """Retrieve all job entries."""
         return self.session.exec(select(Job).offset(offset).limit(limit)).all()
 
-    def update(self, job_id: UUID, job: JobUpdate) -> Job:
+    def update(self, job_id: UUID, job: JobUpdate) -> Optional[Job]:
         """Update an existing job entry."""
-        db_job = self.read_job(job_id)
+        db_job = self.get_by_id(job_id)
         if not db_job:
             return None
         job_data = job.model_dump(exclude_unset=True)
@@ -43,7 +42,7 @@ class JobRepository(IJobRepository):
 
     def delete(self, job_id: UUID) -> bool:
         """Delete a job entry by ID."""
-        job = self.read_job(job_id)
+        job = self.get_by_id(job_id)
         if job:
             self.session.delete(job)
             self.session.commit()

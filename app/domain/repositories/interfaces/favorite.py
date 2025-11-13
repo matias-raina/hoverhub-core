@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Sequence, Optional
+from typing import Optional, Sequence
 from uuid import UUID
 
 from app.domain.models.favorite import Favorite

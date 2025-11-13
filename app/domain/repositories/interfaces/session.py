@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import List, Optional
+from typing import Optional, Sequence
 from uuid import UUID
 
 from app.domain.models.session import UserSession
@@ -19,11 +19,11 @@ class ISessionRepository(ABC):
         """Deactivate an existing session and return the updated session."""
 
     @abstractmethod
-    def update(self, session: UserSession) -> UserSession:
+    def update(self, session: UserSession) -> Optional[UserSession]:
         """Update an existing session and return the updated session."""
 
     @abstractmethod
-    def get_all_by_user_id(self, user_id: UUID) -> List[UserSession]:
+    def get_all_by_user_id(self, user_id: UUID) -> Sequence[UserSession]:
         """Retrieve all sessions by user ID."""
 
     @abstractmethod

@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Optional, Sequence
 from uuid import UUID
 
 from sqlmodel import Session, select
@@ -27,24 +27,25 @@ class AccountRepository(IAccountRepository):
 
     def get_user_accounts(
         self, user_id: UUID, account_type: Optional[AccountType] = None
-    ) -> List[Account]:
+    ) -> Sequence[Account]:
         """Retrieve all accounts for a specific user and account type."""
         statement = select(Account).where(Account.user_id == user_id)
         if account_type:
             statement = statement.where(Account.account_type == account_type)
-        return list(self.session.exec(statement).all())
+        return self.session.exec(statement).all()
 
-    def get_all(self) -> List[Account]:
+    def get_all(self) -> Sequence[Account]:
         """Retrieve all accounts."""
-        return list(self.session.exec(select(Account)).all())
+        return self.session.exec(select(Account)).all()
 
-    def update(self, account_id: UUID, account_update: AccountUpdate) -> Account:
+    def update(self, account_id: UUID, account: AccountUpdate) -> Optional[Account]:
         """Update an existing account."""
-        account = self.get_by_id(account_id)
-        if not account:
-            raise ValueError(f"Account with ID {account_id} not found")
-        account.sqlmodel_update(account_update)
-        self.session.add(account)
+        db_account = self.get_by_id(account_id)
+        if not db_account:
+            return None
+        account_data = account.model_dump(exclude_unset=True)
+        db_account.sqlmodel_update(account_data)
+        self.session.add(db_account)
         self.session.commit()
-        self.session.refresh(account)
-        return account
+        self.session.refresh(db_account)
+        return db_account
