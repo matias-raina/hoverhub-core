@@ -1,5 +1,5 @@
 import datetime
-from datetime import datetime as dt, timezone
+from datetime import datetime as dt
 from unittest.mock import MagicMock
 from uuid import uuid4
 
@@ -11,11 +11,7 @@ from app.domain.models.account import Account, AccountType
 from app.domain.models.session import UserSession
 from app.domain.models.user import User
 from app.domain.repositories.interfaces.account import IAccountRepository
-from app.domain.repositories.interfaces.auth import (
-    IAuthRepository,
-    JwtTokenPayload,
-    JwtTokenType,
-)
+from app.domain.repositories.interfaces.auth import IAuthRepository, JwtTokenPayload, JwtTokenType
 from app.domain.repositories.interfaces.session import ISessionRepository
 from app.domain.repositories.interfaces.user import IUserRepository
 from app.services.auth import AuthService
@@ -30,13 +26,13 @@ class TestAuthServiceDecodeTokenSafely:
         user_id = uuid4()
         session_id = uuid4()
         jti = "test-jti"
-        exp = int(dt.now(timezone.utc).timestamp()) + 3600
+        exp = int(dt.now(datetime.UTC).timestamp()) + 3600
 
         mock_payload = {
             "sub": str(user_id),
             "sid": str(session_id),
             "type": JwtTokenType.ACCESS.value,
-            "iat": int(dt.now(timezone.utc).timestamp()),
+            "iat": int(dt.now(datetime.UTC).timestamp()),
             "exp": exp,
             "jti": jti,
         }
@@ -147,13 +143,13 @@ class TestAuthServiceDecodeTokenSafely:
         user_id = uuid4()
         session_id = uuid4()
         jti = "test-jti"
-        exp = int(dt.now(timezone.utc).timestamp()) + 3600
+        exp = int(dt.now(datetime.UTC).timestamp()) + 3600
 
         mock_payload = {
             "sub": str(user_id),
             "sid": str(session_id),
             "type": JwtTokenType.REFRESH.value,  # Wrong type
-            "iat": int(dt.now(timezone.utc).timestamp()),
+            "iat": int(dt.now(datetime.UTC).timestamp()),
             "exp": exp,
             "jti": jti,
         }
@@ -269,13 +265,13 @@ class TestAuthServiceValidateTokenPayload:
         user_id = uuid4()
         session_id = uuid4()
         jti = "test-jti"
-        exp = int(dt.now(timezone.utc).timestamp()) + 3600
+        exp = int(dt.now(datetime.UTC).timestamp()) + 3600
 
         payload = JwtTokenPayload(
             sub=user_id,
             sid=session_id,
             type=JwtTokenType.ACCESS,
-            iat=int(dt.now(timezone.utc).timestamp()),
+            iat=int(dt.now(datetime.UTC).timestamp()),
             exp=exp,
             jti=jti,
         )
@@ -303,17 +299,7 @@ class TestAuthServiceValidateTokenPayload:
         user_id = uuid4()
         session_id = uuid4()
         jti = "test-jti"
-        exp = int(dt.now(timezone.utc).timestamp()) + 3600
-
-        # Create a payload and then modify it to remove a key
-        payload = JwtTokenPayload(
-            sub=user_id,
-            sid=session_id,
-            type=JwtTokenType.ACCESS,
-            iat=int(dt.now(timezone.utc).timestamp()),
-            exp=exp,
-            jti=jti,
-        )
+        exp = int(dt.now(datetime.UTC).timestamp()) + 3600
 
         # Create a mock payload that doesn't have the required attribute
         class MockPayload:
@@ -353,7 +339,7 @@ class TestAuthServiceValidateSession:
         # Arrange
         session_id = uuid4()
         user_id = uuid4()
-        expires_at = dt.now(timezone.utc) + datetime.timedelta(hours=1)
+        expires_at = dt.now(datetime.UTC) + datetime.timedelta(hours=1)
 
         mock_session = UserSession(
             id=session_id,
@@ -361,8 +347,8 @@ class TestAuthServiceValidateSession:
             host="127.0.0.1",
             is_active=True,
             expires_at=expires_at,
-            created_at=dt.now(timezone.utc),
-            updated_at=dt.now(timezone.utc),
+            created_at=dt.now(datetime.UTC),
+            updated_at=dt.now(datetime.UTC),
         )
 
         mock_cache = MagicMock()
@@ -419,7 +405,7 @@ class TestAuthServiceValidateSession:
         # Arrange
         session_id = uuid4()
         user_id = uuid4()
-        expires_at = dt.now(timezone.utc) + datetime.timedelta(hours=1)
+        expires_at = dt.now(datetime.UTC) + datetime.timedelta(hours=1)
 
         mock_session = UserSession(
             id=session_id,
@@ -427,8 +413,8 @@ class TestAuthServiceValidateSession:
             host="127.0.0.1",
             is_active=False,  # Inactive
             expires_at=expires_at,
-            created_at=dt.now(timezone.utc),
-            updated_at=dt.now(timezone.utc),
+            created_at=dt.now(datetime.UTC),
+            updated_at=dt.now(datetime.UTC),
         )
 
         mock_cache = MagicMock()
@@ -458,7 +444,7 @@ class TestAuthServiceValidateSession:
         # Arrange
         session_id = uuid4()
         user_id = uuid4()
-        expires_at = dt.now(timezone.utc) - datetime.timedelta(hours=1)  # Expired
+        expires_at = dt.now(datetime.UTC) - datetime.timedelta(hours=1)  # Expired
 
         mock_session = UserSession(
             id=session_id,
@@ -466,8 +452,8 @@ class TestAuthServiceValidateSession:
             host="127.0.0.1",
             is_active=True,
             expires_at=expires_at,
-            created_at=dt.now(timezone.utc),
-            updated_at=dt.now(timezone.utc),
+            created_at=dt.now(datetime.UTC),
+            updated_at=dt.now(datetime.UTC),
         )
 
         mock_cache = MagicMock()
@@ -508,8 +494,8 @@ class TestAuthServiceValidateUserExistsAndActive:
             email="test@example.com",
             hashed_password="hashed",
             is_active=True,
-            created_at=dt.now(timezone.utc),
-            updated_at=dt.now(timezone.utc),
+            created_at=dt.now(datetime.UTC),
+            updated_at=dt.now(datetime.UTC),
         )
 
         mock_cache = MagicMock()
@@ -571,8 +557,8 @@ class TestAuthServiceValidateUserExistsAndActive:
             email="test@example.com",
             hashed_password="hashed",
             is_active=False,  # Inactive
-            created_at=dt.now(timezone.utc),
-            updated_at=dt.now(timezone.utc),
+            created_at=dt.now(datetime.UTC),
+            updated_at=dt.now(datetime.UTC),
         )
 
         mock_cache = MagicMock()
@@ -608,15 +594,15 @@ class TestAuthServiceGetAuthenticatedAccount:
         account_id = uuid4()
         session_id = uuid4()
         jti = "test-jti"
-        exp = int(dt.now(timezone.utc).timestamp()) + 3600
+        exp = int(dt.now(datetime.UTC).timestamp()) + 3600
 
         mock_user = User(
             id=user_id,
             email="test@example.com",
             hashed_password="hashed",
             is_active=True,
-            created_at=dt.now(timezone.utc),
-            updated_at=dt.now(timezone.utc),
+            created_at=dt.now(datetime.UTC),
+            updated_at=dt.now(datetime.UTC),
         )
 
         mock_account = Account(
@@ -625,28 +611,28 @@ class TestAuthServiceGetAuthenticatedAccount:
             name="Test Account",
             account_type=AccountType.EMPLOYER,
             is_active=True,
-            created_at=dt.now(timezone.utc),
-            updated_at=dt.now(timezone.utc),
+            created_at=dt.now(datetime.UTC),
+            updated_at=dt.now(datetime.UTC),
         )
 
         mock_payload = JwtTokenPayload(
             sub=user_id,
             sid=session_id,
             type=JwtTokenType.ACCESS,
-            iat=int(dt.now(timezone.utc).timestamp()),
+            iat=int(dt.now(datetime.UTC).timestamp()),
             exp=exp,
             jti=jti,
         )
 
-        expires_at = dt.now(timezone.utc) + datetime.timedelta(hours=1)
+        expires_at = dt.now(datetime.UTC) + datetime.timedelta(hours=1)
         mock_session = UserSession(
             id=session_id,
             user_id=user_id,
             host="127.0.0.1",
             is_active=True,
             expires_at=expires_at,
-            created_at=dt.now(timezone.utc),
-            updated_at=dt.now(timezone.utc),
+            created_at=dt.now(datetime.UTC),
+            updated_at=dt.now(datetime.UTC),
         )
 
         mock_cache = MagicMock()
@@ -657,7 +643,7 @@ class TestAuthServiceGetAuthenticatedAccount:
             "sub": str(user_id),
             "sid": str(session_id),
             "type": JwtTokenType.ACCESS.value,
-            "iat": int(dt.now(timezone.utc).timestamp()),
+            "iat": int(dt.now(datetime.UTC).timestamp()),
             "exp": exp,
             "jti": jti,
         }
@@ -693,35 +679,35 @@ class TestAuthServiceGetAuthenticatedAccount:
         account_id = uuid4()
         session_id = uuid4()
         jti = "test-jti"
-        exp = int(dt.now(timezone.utc).timestamp()) + 3600
+        exp = int(dt.now(datetime.UTC).timestamp()) + 3600
 
         mock_user = User(
             id=user_id,
             email="test@example.com",
             hashed_password="hashed",
             is_active=True,
-            created_at=dt.now(timezone.utc),
-            updated_at=dt.now(timezone.utc),
+            created_at=dt.now(datetime.UTC),
+            updated_at=dt.now(datetime.UTC),
         )
 
         mock_payload = JwtTokenPayload(
             sub=user_id,
             sid=session_id,
             type=JwtTokenType.ACCESS,
-            iat=int(dt.now(timezone.utc).timestamp()),
+            iat=int(dt.now(datetime.UTC).timestamp()),
             exp=exp,
             jti=jti,
         )
 
-        expires_at = dt.now(timezone.utc) + datetime.timedelta(hours=1)
+        expires_at = dt.now(datetime.UTC) + datetime.timedelta(hours=1)
         mock_session = UserSession(
             id=session_id,
             user_id=user_id,
             host="127.0.0.1",
             is_active=True,
             expires_at=expires_at,
-            created_at=dt.now(timezone.utc),
-            updated_at=dt.now(timezone.utc),
+            created_at=dt.now(datetime.UTC),
+            updated_at=dt.now(datetime.UTC),
         )
 
         mock_cache = MagicMock()
@@ -732,7 +718,7 @@ class TestAuthServiceGetAuthenticatedAccount:
             "sub": str(user_id),
             "sid": str(session_id),
             "type": JwtTokenType.ACCESS.value,
-            "iat": int(dt.now(timezone.utc).timestamp()),
+            "iat": int(dt.now(datetime.UTC).timestamp()),
             "exp": exp,
             "jti": jti,
         }
@@ -769,15 +755,15 @@ class TestAuthServiceGetAuthenticatedAccount:
         account_id = uuid4()
         session_id = uuid4()
         jti = "test-jti"
-        exp = int(dt.now(timezone.utc).timestamp()) + 3600
+        exp = int(dt.now(datetime.UTC).timestamp()) + 3600
 
         mock_user = User(
             id=user_id,
             email="test@example.com",
             hashed_password="hashed",
             is_active=True,
-            created_at=dt.now(timezone.utc),
-            updated_at=dt.now(timezone.utc),
+            created_at=dt.now(datetime.UTC),
+            updated_at=dt.now(datetime.UTC),
         )
 
         mock_account = Account(
@@ -786,19 +772,19 @@ class TestAuthServiceGetAuthenticatedAccount:
             name="Test Account",
             account_type=AccountType.EMPLOYER,
             is_active=True,
-            created_at=dt.now(timezone.utc),
-            updated_at=dt.now(timezone.utc),
+            created_at=dt.now(datetime.UTC),
+            updated_at=dt.now(datetime.UTC),
         )
 
-        expires_at = dt.now(timezone.utc) + datetime.timedelta(hours=1)
+        expires_at = dt.now(datetime.UTC) + datetime.timedelta(hours=1)
         mock_session = UserSession(
             id=session_id,
             user_id=user_id,
             host="127.0.0.1",
             is_active=True,
             expires_at=expires_at,
-            created_at=dt.now(timezone.utc),
-            updated_at=dt.now(timezone.utc),
+            created_at=dt.now(datetime.UTC),
+            updated_at=dt.now(datetime.UTC),
         )
 
         mock_cache = MagicMock()
@@ -809,7 +795,7 @@ class TestAuthServiceGetAuthenticatedAccount:
             "sub": str(user_id),
             "sid": str(session_id),
             "type": JwtTokenType.ACCESS.value,
-            "iat": int(dt.now(timezone.utc).timestamp()),
+            "iat": int(dt.now(datetime.UTC).timestamp()),
             "exp": exp,
             "jti": jti,
         }
@@ -848,26 +834,26 @@ class TestAuthServiceGetAuthenticatedUser:
         user_id = uuid4()
         session_id = uuid4()
         jti = "test-jti"
-        exp = int(dt.now(timezone.utc).timestamp()) + 3600
+        exp = int(dt.now(datetime.UTC).timestamp()) + 3600
 
         mock_user = User(
             id=user_id,
             email="test@example.com",
             hashed_password="hashed",
             is_active=True,
-            created_at=dt.now(timezone.utc),
-            updated_at=dt.now(timezone.utc),
+            created_at=dt.now(datetime.UTC),
+            updated_at=dt.now(datetime.UTC),
         )
 
-        expires_at = dt.now(timezone.utc) + datetime.timedelta(hours=1)
+        expires_at = dt.now(datetime.UTC) + datetime.timedelta(hours=1)
         mock_session = UserSession(
             id=session_id,
             user_id=user_id,
             host="127.0.0.1",
             is_active=True,
             expires_at=expires_at,
-            created_at=dt.now(timezone.utc),
-            updated_at=dt.now(timezone.utc),
+            created_at=dt.now(datetime.UTC),
+            updated_at=dt.now(datetime.UTC),
         )
 
         mock_cache = MagicMock()
@@ -878,7 +864,7 @@ class TestAuthServiceGetAuthenticatedUser:
             "sub": str(user_id),
             "sid": str(session_id),
             "type": JwtTokenType.ACCESS.value,
-            "iat": int(dt.now(timezone.utc).timestamp()),
+            "iat": int(dt.now(datetime.UTC).timestamp()),
             "exp": exp,
             "jti": jti,
         }
@@ -918,18 +904,18 @@ class TestAuthServiceRefreshToken:
         user_id = uuid4()
         session_id = uuid4()
         jti = "old-jti"
-        exp = int(dt.now(timezone.utc).timestamp()) + 3600
+        exp = int(dt.now(datetime.UTC).timestamp()) + 3600
 
-        expires_at = dt.now(timezone.utc) + datetime.timedelta(hours=1)
-        new_expires_at = dt.now(timezone.utc) + datetime.timedelta(hours=2)
+        expires_at = dt.now(datetime.UTC) + datetime.timedelta(hours=1)
+        new_expires_at = dt.now(datetime.UTC) + datetime.timedelta(hours=2)
         mock_session = UserSession(
             id=session_id,
             user_id=user_id,
             host="127.0.0.1",
             is_active=True,
             expires_at=expires_at,
-            created_at=dt.now(timezone.utc),
-            updated_at=dt.now(timezone.utc),
+            created_at=dt.now(datetime.UTC),
+            updated_at=dt.now(datetime.UTC),
         )
 
         mock_cache = MagicMock()
@@ -941,7 +927,7 @@ class TestAuthServiceRefreshToken:
             "sub": str(user_id),
             "sid": str(session_id),
             "type": JwtTokenType.REFRESH.value,
-            "iat": int(dt.now(timezone.utc).timestamp()),
+            "iat": int(dt.now(datetime.UTC).timestamp()),
             "exp": exp,
             "jti": jti,
         }
@@ -986,7 +972,7 @@ class TestAuthServiceSignout:
         user_id = uuid4()
         session_id = uuid4()
         jti = "test-jti"
-        exp = int(dt.now(timezone.utc).timestamp()) + 3600
+        exp = int(dt.now(datetime.UTC).timestamp()) + 3600
 
         mock_cache = MagicMock()
         mock_cache.setex.return_value = True
@@ -996,7 +982,7 @@ class TestAuthServiceSignout:
             "sub": str(user_id),
             "sid": str(session_id),
             "type": JwtTokenType.ACCESS.value,
-            "iat": int(dt.now(timezone.utc).timestamp()),
+            "iat": int(dt.now(datetime.UTC).timestamp()),
             "exp": exp,
             "jti": jti,
         }
@@ -1030,7 +1016,7 @@ class TestAuthServiceBlacklistToken:
         """Test blacklisting token successfully"""
         # Arrange
         jti = "test-jti"
-        exp = int(dt.now(timezone.utc).timestamp()) + 3600  # Future expiration
+        exp = int(dt.now(datetime.UTC).timestamp()) + 3600  # Future expiration
 
         mock_cache = MagicMock()
         mock_cache.setex.return_value = True
@@ -1062,7 +1048,7 @@ class TestAuthServiceBlacklistToken:
         """Test blacklisting token that's already expired"""
         # Arrange
         jti = "test-jti"
-        exp = int(dt.now(timezone.utc).timestamp()) - 3600  # Past expiration
+        exp = int(dt.now(datetime.UTC).timestamp()) - 3600  # Past expiration
 
         mock_cache = MagicMock()
         mock_auth_repository = MagicMock(spec=IAuthRepository)
@@ -1087,7 +1073,7 @@ class TestAuthServiceBlacklistToken:
     def test_blacklist_token_none_jti(self):
         """Test blacklisting token with None jti"""
         # Arrange
-        exp = int(dt.now(timezone.utc).timestamp()) + 3600
+        exp = int(dt.now(datetime.UTC).timestamp()) + 3600
 
         mock_cache = MagicMock()
         mock_auth_repository = MagicMock(spec=IAuthRepository)
@@ -1141,7 +1127,7 @@ class TestAuthServiceCalculateTokenTTL:
     def test_calculate_token_ttl_success(self):
         """Test calculating token TTL"""
         # Arrange
-        exp = int(dt.now(timezone.utc).timestamp()) + 3600  # 1 hour from now
+        exp = int(dt.now(datetime.UTC).timestamp()) + 3600  # 1 hour from now
 
         mock_cache = MagicMock()
         mock_auth_repository = MagicMock(spec=IAuthRepository)
@@ -1164,4 +1150,3 @@ class TestAuthServiceCalculateTokenTTL:
         assert isinstance(ttl, int)
         assert ttl > 0
         assert ttl <= 3600  # Should be close to 3600 (within a few seconds)
-

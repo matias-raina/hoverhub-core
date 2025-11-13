@@ -178,9 +178,7 @@ class TestApplyToJob:
         fake_job_id = uuid4()
         application_data = {"message": "I want to apply"}
 
-        response = client.post(
-            f"/applications/jobs/{fake_job_id}", json=application_data
-        )
+        response = client.post(f"/applications/jobs/{fake_job_id}", json=application_data)
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
 
@@ -238,9 +236,7 @@ class TestListApplicationsForJob:
 
         # Create another employer user
         other_employer_user = create_test_user(db_session, email="employer8@test.com")
-        create_test_account(
-            db_session, other_employer_user.id, account_type=AccountType.EMPLOYER
-        )
+        create_test_account(db_session, other_employer_user.id, account_type=AccountType.EMPLOYER)
 
         # Signin as other employer
         signin_response = client.post(
@@ -257,9 +253,7 @@ class TestListApplicationsForJob:
     def test_list_applications_for_job_not_found(self, client, db_session):
         """Test listing applications for a non-existent job"""
         employer_user = create_test_user(db_session, email="employer9@test.com")
-        create_test_account(
-            db_session, employer_user.id, account_type=AccountType.EMPLOYER
-        )
+        create_test_account(db_session, employer_user.id, account_type=AccountType.EMPLOYER)
 
         # Signin as employer
         signin_response = client.post(
@@ -467,9 +461,7 @@ class TestUpdateApplicationStatus:
             db_session, droner_user1.id, account_type=AccountType.DRONER
         )
         droner_user2 = create_test_user(db_session, email="droner14b@test.com")
-        create_test_account(
-            db_session, droner_user2.id, account_type=AccountType.DRONER
-        )
+        create_test_account(db_session, droner_user2.id, account_type=AccountType.DRONER)
 
         application = create_test_application(db_session, job.id, droner_account1.id)
 
@@ -508,9 +500,7 @@ class TestUpdateApplicationStatus:
 
         # Create another employer
         other_employer_user = create_test_user(db_session, email="employer16@test.com")
-        create_test_account(
-            db_session, other_employer_user.id, account_type=AccountType.EMPLOYER
-        )
+        create_test_account(db_session, other_employer_user.id, account_type=AccountType.EMPLOYER)
 
         # Signin as other employer
         signin_response = client.post(
@@ -554,9 +544,7 @@ class TestUpdateApplicationStatus:
         fake_application_id = uuid4()
         update_data = {"status": ApplicationStatus.ACCEPTED.value}
 
-        response = client.patch(
-            f"/applications/{fake_application_id}", json=update_data
-        )
+        response = client.patch(f"/applications/{fake_application_id}", json=update_data)
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
 
@@ -613,9 +601,7 @@ class TestDeleteApplication:
             db_session, droner_user1.id, account_type=AccountType.DRONER
         )
         droner_user2 = create_test_user(db_session, email="droner18b@test.com")
-        create_test_account(
-            db_session, droner_user2.id, account_type=AccountType.DRONER
-        )
+        create_test_account(db_session, droner_user2.id, account_type=AccountType.DRONER)
 
         application = create_test_application(db_session, job.id, droner_account1.id)
 
@@ -645,9 +631,7 @@ class TestDeleteApplication:
         headers = get_auth_headers(token)
 
         fake_application_id = uuid4()
-        response = client.delete(
-            f"/applications/{fake_application_id}", headers=headers
-        )
+        response = client.delete(f"/applications/{fake_application_id}", headers=headers)
         assert response.status_code == status.HTTP_404_NOT_FOUND
 
     def test_delete_application_unauthenticated(self, client):

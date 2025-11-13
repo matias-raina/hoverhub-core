@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING
 
 from sqlmodel import Field, Relationship, SQLModel
 
@@ -20,4 +20,4 @@ class User(SQLModel, table=True):
     created_at: datetime = created_at_field()
     updated_at: datetime = updated_at_field()
 
-    sessions: List["UserSession"] = Relationship(back_populates="user")
+    sessions: list["UserSession"] = Relationship(back_populates="user")

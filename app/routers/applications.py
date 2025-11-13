@@ -33,9 +33,7 @@ async def list_applications_for_job(
     authenticated_user: AuthenticatedUserDep,
     application_service: ApplicationServiceDep,
 ):
-    applications = application_service.list_applications_for_job(
-        authenticated_user.id, job_id
-    )
+    applications = application_service.list_applications_for_job(authenticated_user.id, job_id)
     return [
         {
             "id": app.id,

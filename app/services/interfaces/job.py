@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from typing import List, Optional
 from uuid import UUID
 
 from app.domain.models.job import Job, JobUpdate
@@ -11,15 +10,15 @@ class IJobService(ABC):
         """Create a new job."""
 
     @abstractmethod
-    def read_job(self, job_id: UUID) -> Optional[Job]:
+    def read_job(self, job_id: UUID) -> Job | None:
         """Retrieve a job by ID."""
 
     @abstractmethod
-    def read_jobs(self, offset: int, limit: int) -> List[Job]:
+    def read_jobs(self, offset: int, limit: int) -> list[Job]:
         """Retrieve all jobs."""
 
     @abstractmethod
-    def update_job(self, job_id: UUID, job: JobUpdate) -> Optional[Job]:
+    def update_job(self, job_id: UUID, job: JobUpdate) -> Job | None:
         """Update an existing job."""
 
     @abstractmethod

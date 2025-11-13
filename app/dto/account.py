@@ -1,5 +1,3 @@
-from typing import Optional
-
 from pydantic import BaseModel, constr
 
 from app.domain.models.account import AccountType
@@ -11,4 +9,4 @@ class CreateAccountDto(BaseModel):
 
 
 class UpdateAccountDto(BaseModel):
-    name: Optional[constr(min_length=1, strip_whitespace=True)] = None
+    name: constr(min_length=1, strip_whitespace=True) | None = None

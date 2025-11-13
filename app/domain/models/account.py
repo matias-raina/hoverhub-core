@@ -1,7 +1,7 @@
 import enum
 import uuid
 from datetime import datetime
-from typing import TYPE_CHECKING, List, Optional
+from typing import TYPE_CHECKING
 
 from sqlmodel import Column, Enum, Field, Relationship, SQLModel
 
@@ -31,12 +31,12 @@ class Account(SQLModel, table=True):
     created_at: datetime = created_at_field()
     updated_at: datetime = updated_at_field()
 
-    jobs: List["Job"] = Relationship(back_populates="account")
-    favorites: List["Favorite"] = Relationship(back_populates="account")
-    applications: List["Application"] = Relationship(back_populates="account")
+    jobs: list["Job"] = Relationship(back_populates="account")
+    favorites: list["Favorite"] = Relationship(back_populates="account")
+    applications: list["Application"] = Relationship(back_populates="account")
 
 
 class AccountUpdate(SQLModel):
     """Account update model."""
 
-    name: Optional[str] = None
+    name: str | None = None

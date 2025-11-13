@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from unittest.mock import MagicMock
 from uuid import uuid4
 
@@ -24,8 +24,8 @@ class TestUserServiceGetUserById:
             email="test@example.com",
             hashed_password="hashed",
             is_active=True,
-            created_at=datetime.now(timezone.utc),
-            updated_at=datetime.now(timezone.utc),
+            created_at=datetime.now(UTC),
+            updated_at=datetime.now(UTC),
         )
 
         mock_user_repository = MagicMock(spec=IUserRepository)
@@ -72,8 +72,8 @@ class TestUserServiceGetUserByEmail:
             email=email,
             hashed_password="hashed",
             is_active=True,
-            created_at=datetime.now(timezone.utc),
-            updated_at=datetime.now(timezone.utc),
+            created_at=datetime.now(UTC),
+            updated_at=datetime.now(UTC),
         )
 
         mock_user_repository = MagicMock(spec=IUserRepository)
@@ -117,14 +117,14 @@ class TestUserServiceUpdateUser:
         user_id = uuid4()
         original_email = "old@example.com"
         new_email = "new@example.com"
-        original_updated_at = datetime(2023, 1, 1, tzinfo=timezone.utc)
+        original_updated_at = datetime(2023, 1, 1, tzinfo=UTC)
 
         mock_user = User(
             id=user_id,
             email=original_email,
             hashed_password="hashed",
             is_active=True,
-            created_at=datetime(2023, 1, 1, tzinfo=timezone.utc),
+            created_at=datetime(2023, 1, 1, tzinfo=UTC),
             updated_at=original_updated_at,
         )
 
@@ -133,8 +133,8 @@ class TestUserServiceUpdateUser:
             email=new_email,
             hashed_password="hashed",
             is_active=True,
-            created_at=datetime(2023, 1, 1, tzinfo=timezone.utc),
-            updated_at=datetime.now(timezone.utc),
+            created_at=datetime(2023, 1, 1, tzinfo=UTC),
+            updated_at=datetime.now(UTC),
         )
 
         mock_user_repository = MagicMock(spec=IUserRepository)
@@ -159,14 +159,14 @@ class TestUserServiceUpdateUser:
         # Arrange
         user_id = uuid4()
         original_email = "test@example.com"
-        original_updated_at = datetime(2023, 1, 1, tzinfo=timezone.utc)
+        original_updated_at = datetime(2023, 1, 1, tzinfo=UTC)
 
         mock_user = User(
             id=user_id,
             email=original_email,
             hashed_password="hashed",
             is_active=True,
-            created_at=datetime(2023, 1, 1, tzinfo=timezone.utc),
+            created_at=datetime(2023, 1, 1, tzinfo=UTC),
             updated_at=original_updated_at,
         )
 
@@ -175,8 +175,8 @@ class TestUserServiceUpdateUser:
             email=original_email,
             hashed_password="hashed",
             is_active=True,
-            created_at=datetime(2023, 1, 1, tzinfo=timezone.utc),
-            updated_at=datetime.now(timezone.utc),
+            created_at=datetime(2023, 1, 1, tzinfo=UTC),
+            updated_at=datetime.now(UTC),
         )
 
         mock_user_repository = MagicMock(spec=IUserRepository)
@@ -273,18 +273,18 @@ class TestUserServiceGetUserSessions:
             user_id=user_id,
             host="192.168.1.1",
             is_active=True,
-            expires_at=datetime.now(timezone.utc),
-            created_at=datetime.now(timezone.utc),
-            updated_at=datetime.now(timezone.utc),
+            expires_at=datetime.now(UTC),
+            created_at=datetime.now(UTC),
+            updated_at=datetime.now(UTC),
         )
         session2 = UserSession(
             id=uuid4(),
             user_id=user_id,
             host="192.168.1.2",
             is_active=True,
-            expires_at=datetime.now(timezone.utc),
-            created_at=datetime.now(timezone.utc),
-            updated_at=datetime.now(timezone.utc),
+            expires_at=datetime.now(UTC),
+            created_at=datetime.now(UTC),
+            updated_at=datetime.now(UTC),
         )
         mock_sessions = [session1, session2]
 
@@ -319,4 +319,3 @@ class TestUserServiceGetUserSessions:
         assert result == []
         assert len(result) == 0
         mock_session_repository.get_all_by_user_id.assert_called_once_with(user_id)
-

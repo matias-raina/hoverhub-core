@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from typing import Tuple
 from uuid import UUID
 
 from app.domain.models.account import Account
@@ -12,11 +11,11 @@ class IAuthService(ABC):
     """Auth service interface."""
 
     @abstractmethod
-    def signup(self, host: str, dto: SignupDTO) -> Tuple[User, str, str]:
+    def signup(self, host: str, dto: SignupDTO) -> tuple[User, str, str]:
         """Register a new user."""
 
     @abstractmethod
-    def signin(self, host: str, dto: SigninDTO) -> Tuple[str, str]:
+    def signin(self, host: str, dto: SigninDTO) -> tuple[str, str]:
         """Authenticate a user and return JWT access token and refresh token."""
 
     @abstractmethod
@@ -32,7 +31,7 @@ class IAuthService(ABC):
         """Get authenticated account from access token and account ID."""
 
     @abstractmethod
-    def refresh_token(self, refresh_token: str) -> Tuple[str, str]:
+    def refresh_token(self, refresh_token: str) -> tuple[str, str]:
         """Refresh access token using refresh token."""
 
     @abstractmethod

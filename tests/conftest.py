@@ -1,5 +1,5 @@
 import tempfile
-from typing import Generator
+from collections.abc import Generator
 from unittest.mock import MagicMock
 
 import pytest
@@ -18,9 +18,7 @@ with tempfile.NamedTemporaryFile(delete=False, suffix=".db") as _test_db_file:
 TEST_DATABASE_URL = f"sqlite:///{_test_db_path}"
 
 # Create test engine
-test_engine = create_engine(
-    TEST_DATABASE_URL, connect_args={"check_same_thread": False}
-)
+test_engine = create_engine(TEST_DATABASE_URL, connect_args={"check_same_thread": False})
 
 
 @pytest.fixture(scope="function")

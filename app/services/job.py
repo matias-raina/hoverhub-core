@@ -1,5 +1,4 @@
 from datetime import date
-from typing import List, Optional
 from uuid import UUID
 
 from fastapi import HTTPException, Query, status
@@ -25,7 +24,7 @@ class JobService(IJobService):
             job.end_date = date.fromisoformat(job.end_date)
         return self.job_repository.create(job)
 
-    def read_job(self, job_id: UUID) -> Optional[Job]:
+    def read_job(self, job_id: UUID) -> Job | None:
         """Retrieve a job by ID."""
         job = self.job_repository.read_job(job_id)
         if not job:
@@ -35,13 +34,11 @@ class JobService(IJobService):
             )
         return job
 
-    def read_jobs(
-        self, offset: int = 0, limit: int = Query(default=100, le=100)
-    ) -> List[Job]:
+    def read_jobs(self, offset: int = 0, limit: int = Query(default=100, le=100)) -> list[Job]:
         """Retrieve all jobs."""
         return self.job_repository.read_jobs(offset=offset, limit=limit)
 
-    def update_job(self, job_id: UUID, job: JobUpdate) -> Optional[Job]:
+    def update_job(self, job_id: UUID, job: JobUpdate) -> Job | None:
         """Update an existing job."""
         updated_job = self.job_repository.update(job_id, job)
         if not updated_job:

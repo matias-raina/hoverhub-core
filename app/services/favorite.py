@@ -1,4 +1,4 @@
-from typing import Sequence, Optional
+from collections.abc import Sequence
 from uuid import UUID
 
 from fastapi import HTTPException, status
@@ -18,7 +18,7 @@ class FavoriteService(IFavoriteService):
         favorite = Favorite(account_id=account_id, job_id=dto.job_id)
         return self.favorite_repository.create(favorite)
 
-    def get_favorite_by_id(self, favorite_id: UUID) -> Optional[Favorite]:
+    def get_favorite_by_id(self, favorite_id: UUID) -> Favorite | None:
         """Retrieve a favorite entry by ID."""
         favorite = self.favorite_repository.get_by_id(favorite_id)
         if not favorite:

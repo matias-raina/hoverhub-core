@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from unittest.mock import MagicMock
 from uuid import uuid4
 
@@ -24,7 +24,7 @@ class TestFavoriteServiceDeleteFavorite:
             id=favorite_id,
             account_id=account_id,
             job_id=job_id,
-            created_at=datetime.now(timezone.utc),
+            created_at=datetime.now(UTC),
         )
 
         mock_favorite_repository = MagicMock(spec=IFavoriteRepository)
@@ -72,7 +72,7 @@ class TestFavoriteServiceDeleteFavorite:
             id=favorite_id,
             account_id=account_id,
             job_id=job_id,
-            created_at=datetime.now(timezone.utc),
+            created_at=datetime.now(UTC),
         )
 
         mock_favorite_repository = MagicMock(spec=IFavoriteRepository)
@@ -102,7 +102,7 @@ class TestFavoriteServiceDeleteFavorite:
             id=favorite_id,
             account_id=other_account_id,  # Different account
             job_id=job_id,
-            created_at=datetime.now(timezone.utc),
+            created_at=datetime.now(UTC),
         )
 
         mock_favorite_repository = MagicMock(spec=IFavoriteRepository)

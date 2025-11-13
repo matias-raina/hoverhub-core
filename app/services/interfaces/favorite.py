@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Sequence, Optional
+from collections.abc import Sequence
 from uuid import UUID
 
 from app.domain.models.favorite import Favorite
@@ -12,7 +12,7 @@ class IFavoriteService(ABC):
         """Create a new favorite entry."""
 
     @abstractmethod
-    def get_favorite_by_id(self, favorite_id: UUID) -> Optional[Favorite]:
+    def get_favorite_by_id(self, favorite_id: UUID) -> Favorite | None:
         """Retrieve a favorite entry by ID."""
 
     @abstractmethod

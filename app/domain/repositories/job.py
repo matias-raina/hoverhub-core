@@ -1,4 +1,3 @@
-from typing import List, Optional
 from uuid import UUID
 
 from fastapi import Query
@@ -19,13 +18,11 @@ class JobRepository(IJobRepository):
         self.session.refresh(job)
         return job
 
-    def read_job(self, job_id: UUID) -> Optional[Job]:
+    def read_job(self, job_id: UUID) -> Job | None:
         """Retrieve a job entry by ID."""
         return self.session.get(Job, job_id)
 
-    def read_jobs(
-        self, offset: int = 0, limit: int = Query(default=100, le=100)
-    ) -> List[Job]:
+    def read_jobs(self, offset: int = 0, limit: int = Query(default=100, le=100)) -> list[Job]:
         """Retrieve all job entries."""
         return self.session.exec(select(Job).offset(offset).limit(limit)).all()
 

@@ -1,5 +1,4 @@
-from datetime import date, datetime, timedelta, timezone
-from typing import Optional
+from datetime import UTC, date, datetime, timedelta
 from uuid import UUID
 
 from pwdlib import PasswordHash
@@ -85,8 +84,8 @@ def create_test_job(
     description: str = "Test job description",
     budget: float = 1000.0,
     location: str = "Test Location",
-    start_date: Optional[date] = None,
-    end_date: Optional[date] = None,
+    start_date: date | None = None,
+    end_date: date | None = None,
 ) -> Job:
     """
     Create a test job in the database.
@@ -129,7 +128,7 @@ def create_test_session(
     user_id: UUID,
     host: str = "127.0.0.1",
     is_active: bool = True,
-    expires_at: Optional[datetime] = None,
+    expires_at: datetime | None = None,
 ) -> UserSession:
     """
     Create a test user session in the database.
@@ -145,7 +144,7 @@ def create_test_session(
         Created UserSession instance
     """
     if expires_at is None:
-        expires_at = datetime.now(timezone.utc) + timedelta(hours=24)
+        expires_at = datetime.now(UTC) + timedelta(hours=24)
 
     user_session = UserSession(
         user_id=user_id,
@@ -163,7 +162,7 @@ def create_test_application(
     session: Session,
     job_id: UUID,
     account_id: UUID,
-    message: Optional[str] = None,
+    message: str | None = None,
     status: ApplicationStatus = ApplicationStatus.PENDING,
 ) -> Application:
     """

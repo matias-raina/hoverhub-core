@@ -1,5 +1,5 @@
 import datetime
-from typing import List, Literal, Tuple
+from typing import Literal
 from uuid import UUID
 
 import jwt
@@ -92,7 +92,7 @@ class AuthService(IAuthService):
     def _validate_token_payload(
         self,
         payload: JwtTokenPayload,
-        required_keys: List[Literal["sub", "sid", "type", "iat", "exp", "jti"]],
+        required_keys: list[Literal["sub", "sid", "type", "iat", "exp", "jti"]],
     ) -> None:
         """Validate that required keys exist in token payload."""
         # JwtTokenPayload model ensures all fields exist, so we just check if they're not None
@@ -128,7 +128,7 @@ class AuthService(IAuthService):
 
     def _calculate_token_ttl(self, exp: int) -> int:
         """Calculate TTL for a token based on its expiration."""
-        return exp - int(datetime.datetime.now(datetime.timezone.utc).timestamp())
+        return exp - int(datetime.datetime.now(datetime.UTC).timestamp())
 
     def _blacklist_token(self, jti: str, exp: int) -> None:
         """Add token to blacklist with appropriate TTL."""
@@ -156,20 +156,18 @@ class AuthService(IAuthService):
 
         return user
 
-    def _create_session_and_tokens(self, user: User, host: str) -> Tuple[str, str]:
+    def _create_session_and_tokens(self, user: User, host: str) -> tuple[str, str]:
         """Create session and generate access and refresh tokens."""
         session = UserSession(
             user_id=user.id,
             host=host,
-            expires_at=datetime.datetime.now(datetime.timezone.utc),
+            expires_at=datetime.datetime.now(datetime.UTC),
         )
         session = self.session_repository.create(session)
 
         # Create tokens with the actual session ID and get expiration
-        (access_token, refresh_token, refresh_token_exp) = (
-            self.auth_repository.create_token(
-                {"sub": str(user.id), "sid": str(session.id)}
-            )
+        (access_token, refresh_token, refresh_token_exp) = self.auth_repository.create_token(
+            {"sub": str(user.id), "sid": str(session.id)}
         )
 
         # Update session expiry to match the refresh token
@@ -178,7 +176,7 @@ class AuthService(IAuthService):
 
         return access_token, refresh_token
 
-    def signup(self, host: str, dto: SignupDTO) -> Tuple[User, str, str]:
+    def signup(self, host: str, dto: SignupDTO) -> tuple[User, str, str]:
         """Register a new user."""
         hashed_password = self.auth_repository.hash_password(dto.password)
 
@@ -196,13 +194,11 @@ class AuthService(IAuthService):
 
         return user, access_token, refresh_token
 
-    def signin(self, host: str, dto: SigninDTO) -> Tuple[str, str]:
+    def signin(self, host: str, dto: SigninDTO) -> tuple[str, str]:
         """Authenticate a user and return JWT access token and refresh token."""
         user = self.user_repository.get_by_email(dto.email)
 
-        if not user or not self.auth_repository.verify_password(
-            dto.password, user.hashed_password
-        ):
+        if not user or not self.auth_repository.verify_password(dto.password, user.hashed_password):
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid email or password",
@@ -250,11 +246,9 @@ class AuthService(IAuthService):
 
         return account
 
-    def refresh_token(self, refresh_token: str) -> Tuple[str, str]:
+    def refresh_token(self, refresh_token: str) -> tuple[str, str]:
         """Refresh access token using refresh token."""
-        payload = self._decode_token_safely(
-            refresh_token, expected_type=JwtTokenType.REFRESH
-        )
+        payload = self._decode_token_safely(refresh_token, expected_type=JwtTokenType.REFRESH)
 
         self._check_token_blacklist(payload.jti)
         self._validate_token_payload(payload, ["sub", "sid"])
@@ -263,10 +257,8 @@ class AuthService(IAuthService):
 
         self._blacklist_token(payload.jti, payload.exp_timestamp)
 
-        access_token, new_refresh_token, refresh_token_exp = (
-            self.auth_repository.create_token(
-                {"sub": str(payload.sub), "sid": str(payload.sid)}
-            )
+        access_token, new_refresh_token, refresh_token_exp = self.auth_repository.create_token(
+            {"sub": str(payload.sub), "sid": str(payload.sid)}
         )
 
         session.expires_at = refresh_token_exp

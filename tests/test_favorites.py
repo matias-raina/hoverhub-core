@@ -76,9 +76,7 @@ class TestCreateFavorite:
     def test_create_favorite_job_not_found(self, client, db_session):
         """Test creating a favorite for a non-existent job"""
         user = create_test_user(db_session, email="user@test.com")
-        account = create_test_account(
-            db_session, user.id, account_type=AccountType.EMPLOYER
-        )
+        account = create_test_account(db_session, user.id, account_type=AccountType.EMPLOYER)
 
         # Signin
         signin_response = client.post(
@@ -104,9 +102,7 @@ class TestCreateFavorite:
     def test_create_favorite_missing_job_id(self, client, db_session):
         """Test creating a favorite without job_id"""
         user = create_test_user(db_session, email="user2@test.com")
-        account = create_test_account(
-            db_session, user.id, account_type=AccountType.EMPLOYER
-        )
+        account = create_test_account(db_session, user.id, account_type=AccountType.EMPLOYER)
 
         # Signin
         signin_response = client.post(
@@ -132,9 +128,7 @@ class TestCreateFavorite:
     def test_create_favorite_missing_account_header(self, client, db_session):
         """Test creating a favorite without x-account-id header"""
         user = create_test_user(db_session, email="user3@test.com")
-        account = create_test_account(
-            db_session, user.id, account_type=AccountType.EMPLOYER
-        )
+        account = create_test_account(db_session, user.id, account_type=AccountType.EMPLOYER)
         job = create_test_job(db_session, account.id)
 
         # Signin but don't include account header
@@ -156,9 +150,7 @@ class TestCreateFavorite:
         create_test_account(db_session, user1.id, account_type=AccountType.EMPLOYER)
 
         user2 = create_test_user(db_session, email="user5@test.com")
-        account2 = create_test_account(
-            db_session, user2.id, account_type=AccountType.EMPLOYER
-        )
+        account2 = create_test_account(db_session, user2.id, account_type=AccountType.EMPLOYER)
         job = create_test_job(db_session, account2.id)
 
         # Signin as user1 but try to use account2
@@ -221,9 +213,7 @@ class TestGetFavorites:
     def test_get_favorites_empty(self, client, db_session):
         """Test getting favorites when account has none"""
         user = create_test_user(db_session, email="user6@test.com")
-        account = create_test_account(
-            db_session, user.id, account_type=AccountType.EMPLOYER
-        )
+        account = create_test_account(db_session, user.id, account_type=AccountType.EMPLOYER)
 
         # Signin
         signin_response = client.post(
@@ -242,14 +232,10 @@ class TestGetFavorites:
     def test_get_favorites_only_own(self, client, db_session):
         """Test that users only see favorites for their account"""
         user1 = create_test_user(db_session, email="user7@test.com")
-        account1 = create_test_account(
-            db_session, user1.id, account_type=AccountType.EMPLOYER
-        )
+        account1 = create_test_account(db_session, user1.id, account_type=AccountType.EMPLOYER)
 
         user2 = create_test_user(db_session, email="user8@test.com")
-        account2 = create_test_account(
-            db_session, user2.id, account_type=AccountType.EMPLOYER
-        )
+        account2 = create_test_account(db_session, user2.id, account_type=AccountType.EMPLOYER)
         job = create_test_job(db_session, account2.id)
 
         # Create favorite for account2
@@ -267,9 +253,7 @@ class TestGetFavorites:
         assert response.status_code == status.HTTP_200_OK
         data = response.json()
         favorite_ids = [fav["id"] for fav in data]
-        assert (
-            str(favorite2.id) not in favorite_ids
-        )  # Should not see account2's favorites
+        assert str(favorite2.id) not in favorite_ids  # Should not see account2's favorites
 
     def test_get_favorites_unauthenticated(self, client):
         """Test getting favorites without authentication"""
@@ -328,14 +312,10 @@ class TestDeleteFavorite:
     def test_delete_favorite_unauthorized(self, client, db_session):
         """Test deleting someone else's favorite (should fail)"""
         user1 = create_test_user(db_session, email="user10@test.com")
-        account1 = create_test_account(
-            db_session, user1.id, account_type=AccountType.EMPLOYER
-        )
+        account1 = create_test_account(db_session, user1.id, account_type=AccountType.EMPLOYER)
 
         user2 = create_test_user(db_session, email="user11@test.com")
-        account2 = create_test_account(
-            db_session, user2.id, account_type=AccountType.EMPLOYER
-        )
+        account2 = create_test_account(db_session, user2.id, account_type=AccountType.EMPLOYER)
         job = create_test_job(db_session, account2.id)
 
         favorite = create_test_favorite(db_session, account2.id, job.id)
@@ -355,9 +335,7 @@ class TestDeleteFavorite:
     def test_delete_favorite_not_found(self, client, db_session):
         """Test deleting a non-existent favorite"""
         user = create_test_user(db_session, email="user12@test.com")
-        account = create_test_account(
-            db_session, user.id, account_type=AccountType.EMPLOYER
-        )
+        account = create_test_account(db_session, user.id, account_type=AccountType.EMPLOYER)
 
         # Signin
         signin_response = client.post(
@@ -381,9 +359,7 @@ class TestDeleteFavorite:
     def test_delete_favorite_missing_account_header(self, client, db_session):
         """Test deleting a favorite without x-account-id header"""
         user = create_test_user(db_session, email="user13@test.com")
-        account = create_test_account(
-            db_session, user.id, account_type=AccountType.EMPLOYER
-        )
+        account = create_test_account(db_session, user.id, account_type=AccountType.EMPLOYER)
         job = create_test_job(db_session, account.id)
         favorite = create_test_favorite(db_session, account.id, job.id)
 
@@ -401,9 +377,7 @@ class TestDeleteFavorite:
     def test_delete_favorite_invalid_uuid(self, client, db_session):
         """Test deleting a favorite with invalid UUID format"""
         user = create_test_user(db_session, email="user14@test.com")
-        account = create_test_account(
-            db_session, user.id, account_type=AccountType.EMPLOYER
-        )
+        account = create_test_account(db_session, user.id, account_type=AccountType.EMPLOYER)
 
         # Signin
         signin_response = client.post(

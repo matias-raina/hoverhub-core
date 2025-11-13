@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from typing import List, Optional
 from uuid import UUID
 
 from app.domain.models.session import UserSession
@@ -11,11 +10,11 @@ class ISessionRepository(ABC):
         """Create a new session in the database."""
 
     @abstractmethod
-    def get_by_id(self, session_id: UUID) -> Optional[UserSession]:
+    def get_by_id(self, session_id: UUID) -> UserSession | None:
         """Get a session by its ID."""
 
     @abstractmethod
-    def deactivate(self, session_id: UUID) -> Optional[UserSession]:
+    def deactivate(self, session_id: UUID) -> UserSession | None:
         """Deactivate an existing session and return the updated session."""
 
     @abstractmethod
@@ -23,7 +22,7 @@ class ISessionRepository(ABC):
         """Update an existing session and return the updated session."""
 
     @abstractmethod
-    def get_all_by_user_id(self, user_id: UUID) -> List[UserSession]:
+    def get_all_by_user_id(self, user_id: UUID) -> list[UserSession]:
         """Retrieve all sessions by user ID."""
 
     @abstractmethod

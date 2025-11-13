@@ -283,7 +283,7 @@ class TestGetAccount:
         assert data["name"] == account.name
         assert data["user_id"] == str(user.id)
         # Access account_type via getattr to avoid type checker issues with SQLModel FieldInfo
-        account_type_value = getattr(account, "account_type").value
+        account_type_value = account.account_type.value
         assert data["account_type"] == account_type_value
 
     def test_get_account_not_found(self, client, db_session):
@@ -366,9 +366,7 @@ class TestUpdateAccount:
             "name": "Updated Name",
         }
 
-        response = client.put(
-            f"/accounts/{account.id}", json=update_data, headers=headers
-        )
+        response = client.put(f"/accounts/{account.id}", json=update_data, headers=headers)
         assert response.status_code == status.HTTP_200_OK
         data = response.json()
         assert data["name"] == update_data["name"]
@@ -391,16 +389,14 @@ class TestUpdateAccount:
         # Update only name (partial update)
         update_data = {"name": "Updated Name"}
 
-        response = client.put(
-            f"/accounts/{account.id}", json=update_data, headers=headers
-        )
+        response = client.put(f"/accounts/{account.id}", json=update_data, headers=headers)
         assert response.status_code == status.HTTP_200_OK
         data = response.json()
         assert data["name"] == "Updated Name"
         assert data["id"] == str(account.id)
         # Other fields should remain unchanged
         # Access account_type via getattr to avoid type checker issues with SQLModel FieldInfo
-        account_type_value = getattr(account, "account_type").value
+        account_type_value = account.account_type.value
         assert data["account_type"] == account_type_value
 
     def test_update_account_not_found(self, client, db_session):
@@ -417,9 +413,7 @@ class TestUpdateAccount:
         fake_account_id = uuid4()
         update_data = {"name": "Updated Name"}
 
-        response = client.put(
-            f"/accounts/{fake_account_id}", json=update_data, headers=headers
-        )
+        response = client.put(f"/accounts/{fake_account_id}", json=update_data, headers=headers)
         assert response.status_code == status.HTTP_404_NOT_FOUND
         assert "not found" in response.json()["detail"].lower()
 
@@ -441,9 +435,7 @@ class TestUpdateAccount:
 
         # User1 tries to update user2's account
         update_data = {"name": "Hacked Name"}
-        response = client.put(
-            f"/accounts/{account2.id}", json=update_data, headers=headers1
-        )
+        response = client.put(f"/accounts/{account2.id}", json=update_data, headers=headers1)
         assert response.status_code == status.HTTP_403_FORBIDDEN
         assert "not authorized" in response.json()["detail"].lower()
 
@@ -471,7 +463,5 @@ class TestUpdateAccount:
 
         update_data = {"name": ""}
 
-        response = client.put(
-            f"/accounts/{account.id}", json=update_data, headers=headers
-        )
+        response = client.put(f"/accounts/{account.id}", json=update_data, headers=headers)
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT

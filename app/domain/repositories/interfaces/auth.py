@@ -1,7 +1,6 @@
 import enum
 from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import Tuple, Union
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, field_validator
@@ -22,8 +21,8 @@ class JwtTokenPayload(BaseModel):
     sub: UUID
     sid: UUID
     type: JwtTokenType
-    iat: Union[datetime, int]  # JWT returns int timestamps
-    exp: Union[datetime, int]  # JWT returns int timestamps
+    iat: datetime | int  # JWT returns int timestamps
+    exp: datetime | int  # JWT returns int timestamps
     jti: str
 
     @field_validator("sub", "sid", mode="before")
@@ -67,5 +66,5 @@ class IAuthRepository(ABC):
         """Decode a token and return raw payload dictionary."""
 
     @abstractmethod
-    def create_token(self, data: dict) -> Tuple[str, str, datetime]:
+    def create_token(self, data: dict) -> tuple[str, str, datetime]:
         """Create access and refresh tokens for a user. Returns a tuple of (access_token, refresh_token, refresh_token_exp)."""

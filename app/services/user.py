@@ -1,5 +1,4 @@
-from datetime import datetime, timezone
-from typing import List, Optional
+from datetime import UTC, datetime
 from uuid import UUID
 
 from fastapi import HTTPException, status
@@ -12,13 +11,11 @@ from app.services.interfaces.user import IUserService
 
 
 class UserService(IUserService):
-    def __init__(
-        self, user_repository: IUserRepository, session_repository: ISessionRepository
-    ):
+    def __init__(self, user_repository: IUserRepository, session_repository: ISessionRepository):
         self.user_repository = user_repository
         self.session_repository = session_repository
 
-    def get_user_by_id(self, user_id: UUID) -> Optional[User]:
+    def get_user_by_id(self, user_id: UUID) -> User | None:
         """Get a user by ID."""
         user = self.user_repository.get_by_id(user_id)
         if not user:
@@ -28,7 +25,7 @@ class UserService(IUserService):
             )
         return user
 
-    def get_user_by_email(self, email: str) -> Optional[User]:
+    def get_user_by_email(self, email: str) -> User | None:
         """Get a user by email."""
         user = self.user_repository.get_by_email(email)
         if not user:
@@ -51,7 +48,7 @@ class UserService(IUserService):
         if "email" in kwargs:
             user.email = kwargs["email"]
 
-        user.updated_at = datetime.now(timezone.utc)
+        user.updated_at = datetime.now(UTC)
         return self.user_repository.update(user)
 
     def delete_user(self, user_id: UUID) -> bool:
@@ -64,6 +61,6 @@ class UserService(IUserService):
             )
         return success
 
-    def get_user_sessions(self, user_id: UUID) -> List[UserSession]:
+    def get_user_sessions(self, user_id: UUID) -> list[UserSession]:
         """Get all sessions for a user."""
         return self.session_repository.get_all_by_user_id(user_id)
