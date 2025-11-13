@@ -250,7 +250,7 @@ class TestAuthServiceCheckTokenBlacklist:
         )
 
         # Act - should not raise exception when jti is None
-        service._check_token_blacklist(None)
+        service._check_token_blacklist(None)  # type: ignore[arg-type]
 
         # Assert - should not call cache.get when jti is None
         mock_cache.get.assert_not_called()
@@ -325,7 +325,7 @@ class TestAuthServiceValidateTokenPayload:
 
         # Act & Assert
         with pytest.raises(HTTPException) as exc_info:
-            service._validate_token_payload(mock_payload, ["sub", "sid"])
+            service._validate_token_payload(mock_payload, ["sub", "sid"])  # type: ignore[arg-type]
 
         assert exc_info.value.status_code == status.HTTP_401_UNAUTHORIZED
         assert "sid" in str(exc_info.value.detail).lower()
@@ -1090,7 +1090,7 @@ class TestAuthServiceBlacklistToken:
         )
 
         # Act
-        service._blacklist_token(None, exp)
+        service._blacklist_token(None, exp)  # type: ignore[arg-type]
 
         # Assert - should not call setex when jti is None
         mock_cache.setex.assert_not_called()
@@ -1115,7 +1115,7 @@ class TestAuthServiceBlacklistToken:
         )
 
         # Act
-        service._blacklist_token(jti, None)
+        service._blacklist_token(jti, None)  # type: ignore[arg-type]
 
         # Assert - should not call setex when exp is None
         mock_cache.setex.assert_not_called()

@@ -12,7 +12,7 @@ class IJobService(ABC):
         """Create a new job."""
 
     @abstractmethod
-    def get_by_id(self, account_id: UUID, job_id: UUID) -> Job | None:
+    def get_by_id(self, account_id: UUID, job_id: UUID) -> Job:
         """Retrieve a job by ID."""
 
     @abstractmethod

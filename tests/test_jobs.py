@@ -3,7 +3,12 @@ from uuid import uuid4
 
 from fastapi import status
 
-from tests.utils import create_test_account, create_test_job, create_test_user
+from tests.utils import (
+    create_test_account,
+    create_test_job,
+    create_test_user,
+    get_account_headers,
+)
 
 
 class TestCreateJob:
@@ -15,8 +20,15 @@ class TestCreateJob:
         user = create_test_user(db_session)
         account = create_test_account(db_session, user.id)
 
+        # Signin to get a token
+        signin_response = client.post(
+            "/auth/signin",
+            json={"email": user.email, "password": "testpassword123"},
+        )
+        token = signin_response.json()["access_token"]
+        headers = get_account_headers(token, account.id)
+
         job_data = {
-            "account_id": str(account.id),
             "title": "Drone Photography Job",
             "description": "Need aerial photography for real estate",
             "budget": 1500.0,
@@ -25,22 +37,33 @@ class TestCreateJob:
             "end_date": str(date.today() + timedelta(days=14)),
         }
 
-        response = client.post("/jobs/", json=job_data)
+        response = client.post("/jobs/", json=job_data, headers=headers)
         assert response.status_code == status.HTTP_201_CREATED
         data = response.json()
         assert data["title"] == job_data["title"]
         assert data["description"] == job_data["description"]
         assert data["budget"] == job_data["budget"]
         assert data["location"] == job_data["location"]
-        assert data["account_id"] == job_data["account_id"]
+        assert data["account_id"] == str(account.id)
         assert "id" in data
         assert "created_at" in data
         assert "updated_at" in data
 
-    def test_create_job_invalid_account_id(self, client):
-        """Test creating a job with invalid account_id"""
+    def test_create_job_invalid_account_id(self, client, db_session):
+        """Test creating a job with invalid account_id in header"""
+        user = create_test_user(db_session)
+        fake_account_id = uuid4()
+
+        # Signin to get a token
+        signin_response = client.post(
+            "/auth/signin",
+            json={"email": user.email, "password": "testpassword123"},
+        )
+        token = signin_response.json()["access_token"]
+        # Use a non-existent account ID in header
+        headers = get_account_headers(token, fake_account_id)
+
         job_data = {
-            "account_id": str(uuid4()),  # Non-existent account
             "title": "Test Job",
             "description": "Test description",
             "budget": 1000.0,
@@ -49,44 +72,49 @@ class TestCreateJob:
             "end_date": str(date.today() + timedelta(days=7)),
         }
 
-        response = client.post("/jobs/", json=job_data)
-        # Note: SQLite doesn't enforce foreign keys by default, so this might succeed
-        # In production with PostgreSQL, this would fail with a foreign key constraint
-        # For now, we just verify it doesn't crash
+        response = client.post("/jobs/", json=job_data, headers=headers)
+        # Should fail because account doesn't exist (404) or user doesn't own it (403)
         assert response.status_code in [
-            status.HTTP_201_CREATED,  # SQLite allows it
-            status.HTTP_422_UNPROCESSABLE_CONTENT,
-            status.HTTP_400_BAD_REQUEST,
+            status.HTTP_404_NOT_FOUND,  # Account doesn't exist
+            status.HTTP_403_FORBIDDEN,  # User doesn't own the account
         ]
 
-    def test_create_job_missing_fields(self, client):
+    def test_create_job_missing_fields(self, client, db_session):
         """Test creating a job with missing required fields"""
+        user = create_test_user(db_session)
+        account = create_test_account(db_session, user.id)
+
+        # Signin to get a token
+        signin_response = client.post(
+            "/auth/signin",
+            json={"email": user.email, "password": "testpassword123"},
+        )
+        token = signin_response.json()["access_token"]
+        headers = get_account_headers(token, account.id)
+
         job_data = {
             "title": "Incomplete Job",
-            # Missing required fields: account_id, description, budget, location, dates
+            # Missing required fields: description, budget, location, dates
         }
 
-        # Pydantic should validate and return 422, or database will reject with IntegrityError
-        # The test client might raise the exception directly, so we catch it
-        try:
-            response = client.post("/jobs/", json=job_data)
-            # If we get a response, it should be 422 (validation) or 500 (database error)
-            assert response.status_code in [
-                status.HTTP_422_UNPROCESSABLE_CONTENT,  # Pydantic validation
-                status.HTTP_500_INTERNAL_SERVER_ERROR,  # Database constraint error
-            ]
-        except Exception:
-            # If exception is raised directly, that's also acceptable for this test
-            # The important thing is that invalid data doesn't succeed
-            pass
+        response = client.post("/jobs/", json=job_data, headers=headers)
+        # Pydantic should validate and return 422
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
     def test_create_job_invalid_date_range(self, client, db_session):
         """Test creating a job with end_date before start_date"""
         user = create_test_user(db_session)
         account = create_test_account(db_session, user.id)
 
+        # Signin to get a token
+        signin_response = client.post(
+            "/auth/signin",
+            json={"email": user.email, "password": "testpassword123"},
+        )
+        token = signin_response.json()["access_token"]
+        headers = get_account_headers(token, account.id)
+
         job_data = {
-            "account_id": str(account.id),
             "title": "Invalid Date Job",
             "description": "Test description",
             "budget": 1000.0,
@@ -95,13 +123,12 @@ class TestCreateJob:
             "end_date": str(date.today() + timedelta(days=1)),  # Before start_date
         }
 
-        response = client.post("/jobs/", json=job_data)
-        # The API might accept this or reject it - depends on validation
-        # For now, we'll just test that it doesn't crash
+        response = client.post("/jobs/", json=job_data, headers=headers)
+        # FutureDate only validates that dates are in the future, not that end_date > start_date
+        # The API currently allows this, so we accept either success or validation error
         assert response.status_code in [
-            status.HTTP_201_CREATED,
-            status.HTTP_422_UNPROCESSABLE_CONTENT,
-            status.HTTP_400_BAD_REQUEST,
+            status.HTTP_201_CREATED,  # Currently allowed
+            status.HTTP_422_UNPROCESSABLE_CONTENT,  # If validation is added
         ]
 
 
@@ -115,7 +142,15 @@ class TestGetJob:
         account = create_test_account(db_session, user.id)
         job = create_test_job(db_session, account.id)
 
-        response = client.get(f"/jobs/{job.id}")
+        # Signin to get a token
+        signin_response = client.post(
+            "/auth/signin",
+            json={"email": user.email, "password": "testpassword123"},
+        )
+        token = signin_response.json()["access_token"]
+        headers = get_account_headers(token, account.id)
+
+        response = client.get(f"/jobs/{job.id}", headers=headers)
         assert response.status_code == status.HTTP_200_OK
         data = response.json()
         assert data["id"] == str(job.id)
@@ -124,17 +159,61 @@ class TestGetJob:
         assert data["budget"] == job.budget
         assert data["account_id"] == str(job.account_id)
 
-    def test_get_job_not_found(self, client):
+    def test_get_job_not_found(self, client, db_session):
         """Test getting a non-existent job returns 404"""
+        user = create_test_user(db_session)
+        account = create_test_account(db_session, user.id)
+
+        # Signin to get a token
+        signin_response = client.post(
+            "/auth/signin",
+            json={"email": user.email, "password": "testpassword123"},
+        )
+        token = signin_response.json()["access_token"]
+        headers = get_account_headers(token, account.id)
+
         fake_job_id = uuid4()
-        response = client.get(f"/jobs/{fake_job_id}")
+        response = client.get(f"/jobs/{fake_job_id}", headers=headers)
         assert response.status_code == status.HTTP_404_NOT_FOUND
         assert "not found" in response.json()["detail"].lower()
 
-    def test_get_job_invalid_uuid(self, client):
+    def test_get_job_invalid_uuid(self, client, db_session):
         """Test getting a job with invalid UUID format"""
-        response = client.get("/jobs/invalid-uuid")
+        user = create_test_user(db_session)
+        account = create_test_account(db_session, user.id)
+
+        # Signin to get a token
+        signin_response = client.post(
+            "/auth/signin",
+            json={"email": user.email, "password": "testpassword123"},
+        )
+        token = signin_response.json()["access_token"]
+        headers = get_account_headers(token, account.id)
+
+        response = client.get("/jobs/invalid-uuid", headers=headers)
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
+
+    def test_get_job_unauthorized(self, client, db_session):
+        """Test getting a job from a different account returns 403"""
+        # Create job with first user/account
+        user1 = create_test_user(db_session, email="user1@test.com")
+        account1 = create_test_account(db_session, user1.id)
+        job = create_test_job(db_session, account1.id)
+
+        # Try to access with second user/account
+        user2 = create_test_user(db_session, email="user2@test.com")
+        account2 = create_test_account(db_session, user2.id)
+
+        # Signin as second user
+        signin_response = client.post(
+            "/auth/signin",
+            json={"email": user2.email, "password": "testpassword123"},
+        )
+        token = signin_response.json()["access_token"]
+        headers = get_account_headers(token, account2.id)
+
+        response = client.get(f"/jobs/{job.id}", headers=headers)
+        assert response.status_code == status.HTTP_403_FORBIDDEN
 
 
 class TestListJobs:
@@ -206,13 +285,21 @@ class TestUpdateJob:
         account = create_test_account(db_session, user.id)
         job = create_test_job(db_session, account.id, title="Original Title")
 
+        # Signin to get a token
+        signin_response = client.post(
+            "/auth/signin",
+            json={"email": user.email, "password": "testpassword123"},
+        )
+        token = signin_response.json()["access_token"]
+        headers = get_account_headers(token, account.id)
+
         update_data = {
             "title": "Updated Title",
             "description": "Updated description",
             "budget": 2000.0,
         }
 
-        response = client.put(f"/jobs/{job.id}", json=update_data)
+        response = client.put(f"/jobs/{job.id}", json=update_data, headers=headers)
         assert response.status_code == status.HTTP_200_OK
         data = response.json()
         assert data["title"] == update_data["title"]
@@ -227,25 +314,67 @@ class TestUpdateJob:
         account = create_test_account(db_session, user.id)
         job = create_test_job(db_session, account.id, title="Original Title")
 
+        # Signin to get a token
+        signin_response = client.post(
+            "/auth/signin",
+            json={"email": user.email, "password": "testpassword123"},
+        )
+        token = signin_response.json()["access_token"]
+        headers = get_account_headers(token, account.id)
+
         update_data = {
             "title": "Only Title Updated",
         }
 
-        response = client.put(f"/jobs/{job.id}", json=update_data)
+        response = client.put(f"/jobs/{job.id}", json=update_data, headers=headers)
         assert response.status_code == status.HTTP_200_OK
         data = response.json()
         assert data["title"] == update_data["title"]
         # Other fields should remain unchanged
         assert data["description"] == job.description
 
-    def test_update_job_not_found(self, client):
+    def test_update_job_not_found(self, client, db_session):
         """Test updating a non-existent job returns 404"""
+        user = create_test_user(db_session)
+        account = create_test_account(db_session, user.id)
+
+        # Signin to get a token
+        signin_response = client.post(
+            "/auth/signin",
+            json={"email": user.email, "password": "testpassword123"},
+        )
+        token = signin_response.json()["access_token"]
+        headers = get_account_headers(token, account.id)
+
         fake_job_id = uuid4()
         update_data = {"title": "Updated Title"}
 
-        response = client.put(f"/jobs/{fake_job_id}", json=update_data)
+        response = client.put(f"/jobs/{fake_job_id}", json=update_data, headers=headers)
         assert response.status_code == status.HTTP_404_NOT_FOUND
         assert "not found" in response.json()["detail"].lower()
+
+    def test_update_job_unauthorized(self, client, db_session):
+        """Test updating a job from a different account returns 403"""
+        # Create job with first user/account
+        user1 = create_test_user(db_session, email="user1@test.com")
+        account1 = create_test_account(db_session, user1.id)
+        job = create_test_job(db_session, account1.id)
+
+        # Try to update with second user/account
+        user2 = create_test_user(db_session, email="user2@test.com")
+        account2 = create_test_account(db_session, user2.id)
+
+        # Signin as second user
+        signin_response = client.post(
+            "/auth/signin",
+            json={"email": user2.email, "password": "testpassword123"},
+        )
+        token = signin_response.json()["access_token"]
+        headers = get_account_headers(token, account2.id)
+
+        update_data = {"title": "Unauthorized Update"}
+        response = client.put(f"/jobs/{job.id}", json=update_data, headers=headers)
+        assert response.status_code == status.HTTP_403_FORBIDDEN
 
 
 class TestDeleteJob:
@@ -258,21 +387,73 @@ class TestDeleteJob:
         account = create_test_account(db_session, user.id)
         job = create_test_job(db_session, account.id)
 
-        response = client.delete(f"/jobs/{job.id}")
+        # Signin to get a token
+        signin_response = client.post(
+            "/auth/signin",
+            json={"email": user.email, "password": "testpassword123"},
+        )
+        token = signin_response.json()["access_token"]
+        headers = get_account_headers(token, account.id)
+
+        response = client.delete(f"/jobs/{job.id}", headers=headers)
         assert response.status_code == status.HTTP_204_NO_CONTENT
 
         # Verify job is deleted
-        get_response = client.get(f"/jobs/{job.id}")
+        get_response = client.get(f"/jobs/{job.id}", headers=headers)
         assert get_response.status_code == status.HTTP_404_NOT_FOUND
 
-    def test_delete_job_not_found(self, client):
+    def test_delete_job_not_found(self, client, db_session):
         """Test deleting a non-existent job returns 404"""
+        user = create_test_user(db_session)
+        account = create_test_account(db_session, user.id)
+
+        # Signin to get a token
+        signin_response = client.post(
+            "/auth/signin",
+            json={"email": user.email, "password": "testpassword123"},
+        )
+        token = signin_response.json()["access_token"]
+        headers = get_account_headers(token, account.id)
+
         fake_job_id = uuid4()
-        response = client.delete(f"/jobs/{fake_job_id}")
+        response = client.delete(f"/jobs/{fake_job_id}", headers=headers)
         assert response.status_code == status.HTTP_404_NOT_FOUND
         assert "not found" in response.json()["detail"].lower()
 
-    def test_delete_job_invalid_uuid(self, client):
+    def test_delete_job_invalid_uuid(self, client, db_session):
         """Test deleting a job with invalid UUID format"""
-        response = client.delete("/jobs/invalid-uuid")
+        user = create_test_user(db_session)
+        account = create_test_account(db_session, user.id)
+
+        # Signin to get a token
+        signin_response = client.post(
+            "/auth/signin",
+            json={"email": user.email, "password": "testpassword123"},
+        )
+        token = signin_response.json()["access_token"]
+        headers = get_account_headers(token, account.id)
+
+        response = client.delete("/jobs/invalid-uuid", headers=headers)
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
+
+    def test_delete_job_unauthorized(self, client, db_session):
+        """Test deleting a job from a different account returns 403"""
+        # Create job with first user/account
+        user1 = create_test_user(db_session, email="user1@test.com")
+        account1 = create_test_account(db_session, user1.id)
+        job = create_test_job(db_session, account1.id)
+
+        # Try to delete with second user/account
+        user2 = create_test_user(db_session, email="user2@test.com")
+        account2 = create_test_account(db_session, user2.id)
+
+        # Signin as second user
+        signin_response = client.post(
+            "/auth/signin",
+            json={"email": user2.email, "password": "testpassword123"},
+        )
+        token = signin_response.json()["access_token"]
+        headers = get_account_headers(token, account2.id)
+
+        response = client.delete(f"/jobs/{job.id}", headers=headers)
+        assert response.status_code == status.HTTP_403_FORBIDDEN

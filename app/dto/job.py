@@ -15,8 +15,7 @@ class CreateJobDto(BaseModel):
 
 class UpdateJobDto(BaseModel):
     title: Optional[Annotated[str, StringConstraints(min_length=1)]] = None
-    description: Optional[Annotated[str,
-                                    StringConstraints(min_length=1)]] = None
+    description: Optional[Annotated[str, StringConstraints(min_length=1)]] = None
     budget: Optional[PositiveFloat] = None
     location: Optional[Annotated[str, StringConstraints(min_length=1)]] = None
     start_date: Optional[FutureDate] = None

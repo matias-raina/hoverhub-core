@@ -8,7 +8,7 @@ from app.dto.account import CreateAccountDto, UpdateAccountDto
 
 class IAccountService(ABC):
     @abstractmethod
-    def get_account_by_id(self, user_id: UUID, account_id: UUID) -> Account | None:
+    def get_account_by_id(self, user_id: UUID, account_id: UUID) -> Account:
         """Get an account by ID."""
 
     @abstractmethod

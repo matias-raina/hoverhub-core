@@ -21,5 +21,5 @@ class User(SQLModel, table=True):
     created_at: datetime = created_at_field()
     updated_at: datetime = updated_at_field()
 
-    sessions: List["UserSession"] = Relationship(back_populates="user")
+    sessions: list["UserSession"] = Relationship(back_populates="user")
     account: "Account" = Relationship(back_populates="user")

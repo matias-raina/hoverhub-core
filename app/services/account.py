@@ -13,7 +13,7 @@ class AccountService(IAccountService):
     def __init__(self, account_repository: IAccountRepository):
         self.account_repository = account_repository
 
-    def get_account_by_id(self, user_id: UUID, account_id: UUID) -> Account | None:
+    def get_account_by_id(self, user_id: UUID, account_id: UUID) -> Account:
         account = self.account_repository.get_by_id(account_id)
         if not account:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Account not found")
@@ -50,4 +50,7 @@ class AccountService(IAccountService):
                 detail="You are not authorized to update this account",
             )
         account_update = AccountUpdate(**dto.model_dump(exclude_unset=True))
-        return self.account_repository.update(account_id, account_update)
+        updated_account = self.account_repository.update(account_id, account_update)
+        if not updated_account:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Account not found")
+        return updated_account

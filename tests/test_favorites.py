@@ -112,7 +112,7 @@ class TestCreateFavorite:
         token = signin_response.json()["access_token"]
         headers = get_account_headers(token, account.id)
 
-        favorite_data = {}  # Missing job_id
+        favorite_data: dict[str, str] = {}  # Missing job_id
 
         response = client.post("/jobs/favorites/", json=favorite_data, headers=headers)
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT

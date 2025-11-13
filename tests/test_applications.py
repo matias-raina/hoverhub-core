@@ -77,7 +77,7 @@ class TestApplyToJob:
         token = signin_response.json()["access_token"]
         headers = get_auth_headers(token)
 
-        application_data = {}  # No message
+        application_data: dict[str, str] = {}  # No message
 
         response = client.post(
             f"/applications/jobs/{job.id}", json=application_data, headers=headers

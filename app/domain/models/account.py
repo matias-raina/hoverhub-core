@@ -33,9 +33,9 @@ class Account(SQLModel, table=True):
     updated_at: datetime = updated_at_field()
 
     user: "User" = Relationship(back_populates="account")
-    applications: List["Application"] = Relationship(back_populates="account")
-    favorites: List["Favorite"] = Relationship(back_populates="account")
-    jobs: List["Job"] = Relationship(back_populates="account")
+    applications: list["Application"] = Relationship(back_populates="account")
+    favorites: list["Favorite"] = Relationship(back_populates="account")
+    jobs: list["Job"] = Relationship(back_populates="account")
 
 
 class AccountUpdate(SQLModel):

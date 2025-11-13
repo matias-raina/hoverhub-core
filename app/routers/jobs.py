@@ -25,7 +25,7 @@ async def create_job(
     Returns:
         The created job information
     """
-    job = job_service.create_job(account_context.account_id, dto)
+    job = job_service.create_job(account_context.id, dto)
     return {
         "id": job.id,
         "account_id": job.account_id,
@@ -57,7 +57,7 @@ async def get_job(
     Returns:
         Job information
     """
-    job = job_service.get_by_id(account_context.account_id, job_id)
+    job = job_service.get_by_id(account_context.id, job_id)
     return {
         "id": job.id,
         "account_id": job.account_id,
@@ -126,7 +126,7 @@ async def update_job(
     Returns:
         The updated job information
     """
-    job = job_service.update_job(account_context.account_id, job_id, dto)
+    job = job_service.update_job(account_context.id, job_id, dto)
     return {
         "id": job.id,
         "account_id": job.account_id,
@@ -155,4 +155,4 @@ async def delete_job(
         job_id: The ID of the job to delete
         job_service: Injected job service
     """
-    job_service.delete_job(account_context.account_id, job_id)
+    job_service.delete_job(account_context.id, job_id)

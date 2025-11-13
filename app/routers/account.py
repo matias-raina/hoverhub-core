@@ -111,10 +111,7 @@ async def update_account(
     """
     Update a specific account by ID.
     """
-    from app.domain.models.account import AccountUpdate
-
-    account_update = AccountUpdate(**dto.model_dump(exclude_unset=True))
-    account = account_service.update_account(authenticated_user.id, account_id, account_update)
+    account = account_service.update_account(authenticated_user.id, account_id, dto)
     return {
         "id": account.id,
         "user_id": account.user_id,

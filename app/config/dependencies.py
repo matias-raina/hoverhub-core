@@ -147,10 +147,9 @@ def get_job_service(
 
 def get_account_service(
     account_repository: AccountRepositoryDep,
-    user_repository: UserRepositoryDep,
 ) -> IAccountService:
     """Get the account service."""
-    return AccountService(account_repository, user_repository)
+    return AccountService(account_repository)
 
 
 def get_favorite_service(

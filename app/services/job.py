@@ -26,7 +26,7 @@ class JobService(IJobService):
         )
         return self.job_repository.create(job)
 
-    def get_by_id(self, account_id: UUID, job_id: UUID) -> Job | None:
+    def get_by_id(self, account_id: UUID, job_id: UUID) -> Job:
         """Retrieve a job by ID."""
         job = self.job_repository.get_by_id(job_id)
         if not job:
@@ -54,7 +54,10 @@ class JobService(IJobService):
             )
 
         job_update = JobUpdate(**dto.model_dump(exclude_unset=True))
-        return self.job_repository.update(job_id, job_update)
+        updated_job = self.job_repository.update(job_id, job_update)
+        if not updated_job:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Job not found")
+        return updated_job
 
     def delete_job(self, account_id: UUID, job_id: UUID) -> bool:
         """Delete a job by ID."""

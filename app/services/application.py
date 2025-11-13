@@ -45,7 +45,7 @@ class ApplicationService(IApplicationService):
         applicant_account = droner_accounts[0]
 
         # Prevent duplicate application for same account & job
-        existing = self.application_repository.get_by_job_id(job.id)
+        existing = self.application_repository.get_by_job_id(job.id, offset=0, limit=1000)
         if any(app.account_id == applicant_account.id for app in existing):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -70,15 +70,15 @@ class ApplicationService(IApplicationService):
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Not authorized to view applications for this job",
             )
-        return self.application_repository.get_by_job_id(job.id)
+        return self.application_repository.get_by_job_id(job.id, offset=0, limit=1000)
 
     def list_applications_for_user(self, user_id: UUID) -> Sequence[Application]:
         droner_accounts = self._get_droner_accounts(user_id)
         if not droner_accounts:
             return []
-        apps: Sequence[Application] = []
+        apps: list[Application] = []
         for acc in droner_accounts:
-            apps.extend(self.application_repository.get_by_account_id(acc.id))
+            apps.extend(self.application_repository.get_by_account_id(acc.id, offset=0, limit=1000))
         return apps
 
     def update_application_status(
@@ -134,4 +134,4 @@ class ApplicationService(IApplicationService):
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Not allowed to delete this application",
             )
-        self.application_repository.delete(application_id)
+        return self.application_repository.delete(application_id)
