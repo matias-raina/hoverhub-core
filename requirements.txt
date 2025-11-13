@@ -3,6 +3,7 @@ pwdlib[argon2]
 pydantic
 pyjwt
 sqlmodel
+psycopg2-binary
 pydantic_settings
 alembic
 alembic-postgresql-enum
