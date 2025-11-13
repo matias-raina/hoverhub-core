@@ -1,0 +1,74 @@
+---
+title: HoverHub - Diagrama ER de Base de Datos
+config:
+  layout: elk
+---
+erDiagram
+    direction LR
+
+    User {
+        uuid id PK
+        string email UK
+        string hashed_password
+        boolean is_active
+        datetime created_at
+        datetime updated_at
+    }
+
+    Session {
+        uuid id PK
+        uuid user_id FK
+        string host
+        boolean is_active
+        datetime expires_at
+        datetime created_at
+        datetime updated_at
+    }
+
+    Account {
+        uuid id PK
+        uuid user_id FK
+        string name
+        enum account_type
+        boolean is_active
+        datetime created_at
+        datetime updated_at
+    }
+
+    Job {
+        uuid id PK
+        uuid account_id FK
+        string title
+        string description
+        float budget
+        string location
+        date start_date
+        date end_date
+        datetime created_at
+        datetime updated_at
+    }
+
+    Application {
+        uuid id PK
+        uuid job_id FK
+        uuid account_id FK
+        string message
+        enum status
+        datetime created_at
+        datetime updated_at
+    }
+
+    Favorite {
+        uuid id PK
+        uuid job_id FK
+        uuid account_id FK
+        datetime created_at
+    }
+
+    User ||--o{ Session : "tiene sesiones"
+    User ||--o{ Account : "posee"
+    Account ||--o{ Job : "publica"
+    Account ||--o{ Application : "envía"
+    Account ||--o{ Favorite : "marca como favorito"
+    Job ||--o{ Application : "recibe"
+    Job ||--o{ Favorite : "aparece en"
