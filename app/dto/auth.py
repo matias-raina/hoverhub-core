@@ -1,11 +1,12 @@
-from pydantic import BaseModel, EmailStr, constr
+from typing import Annotated
+from pydantic import BaseModel, EmailStr, StringConstraints
 
 
 class SignupDTO(BaseModel):
     email: EmailStr
-    password: constr(min_length=8)
+    password: Annotated[str, StringConstraints(min_length=8)]
 
 
 class SigninDTO(BaseModel):
     email: EmailStr
-    password: constr(min_length=8)
+    password: Annotated[str, StringConstraints(min_length=8)]
