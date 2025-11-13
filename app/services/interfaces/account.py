@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Optional, Sequence
+from collections.abc import Sequence
 from uuid import UUID
 
 from app.domain.models.account import Account
@@ -7,9 +7,8 @@ from app.dto.account import CreateAccountDto, UpdateAccountDto
 
 
 class IAccountService(ABC):
-
     @abstractmethod
-    def get_account_by_id(self, user_id: UUID, account_id: UUID) -> Optional[Account]:
+    def get_account_by_id(self, user_id: UUID, account_id: UUID) -> Account | None:
         """Get an account by ID."""
 
     @abstractmethod
@@ -21,7 +20,5 @@ class IAccountService(ABC):
         """Get the accounts associated with a user."""
 
     @abstractmethod
-    def update_account(
-        self, user_id: UUID, account_id: UUID, dto: UpdateAccountDto
-    ) -> Account:
+    def update_account(self, user_id: UUID, account_id: UUID, dto: UpdateAccountDto) -> Account:
         """Update an existing account."""

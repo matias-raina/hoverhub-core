@@ -1,14 +1,10 @@
-from typing import Sequence
+from collections.abc import Sequence
 from uuid import UUID
 
 from fastapi import HTTPException, status
 
 from app.domain.models.account import Account, AccountType
-from app.domain.models.application import (
-    Application,
-    ApplicationStatus,
-    ApplicationUpdate,
-)
+from app.domain.models.application import Application, ApplicationStatus, ApplicationUpdate
 from app.domain.repositories.interfaces.account import IAccountRepository
 from app.domain.repositories.interfaces.application import IApplicationRepository
 from app.domain.repositories.interfaces.job import IJobRepository
@@ -33,14 +29,10 @@ class ApplicationService(IApplicationService):
     def _get_employer_accounts(self, user_id: UUID) -> Sequence[Account]:
         return self.account_repository.get_user_accounts(user_id, AccountType.EMPLOYER)
 
-    def apply_to_job(
-        self, user_id: UUID, job_id: UUID, dto: CreateApplicationDto
-    ) -> Application:
+    def apply_to_job(self, user_id: UUID, job_id: UUID, dto: CreateApplicationDto) -> Application:
         job = self.job_repository.get_by_id(job_id)
         if not job:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Job not found"
-            )
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Job not found")
 
         droner_accounts = self._get_droner_accounts(user_id)
         if not droner_accounts:
@@ -67,14 +59,10 @@ class ApplicationService(IApplicationService):
         )
         return self.application_repository.create(application)
 
-    def list_applications_for_job(
-        self, user_id: UUID, job_id: UUID
-    ) -> Sequence[Application]:
+    def list_applications_for_job(self, user_id: UUID, job_id: UUID) -> Sequence[Application]:
         job = self.job_repository.get_by_id(job_id)
         if not job:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Job not found"
-            )
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Job not found")
         employer_accounts = self._get_employer_accounts(user_id)
         employer_account_ids = {a.id for a in employer_accounts}
         if job.account_id not in employer_account_ids:
@@ -118,19 +106,15 @@ class ApplicationService(IApplicationService):
             # Accept/Reject only by employer owning the job
             job = self.job_repository.get_by_id(application.job_id)
             if not job:
-                raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND, detail="Job not found"
-                )
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Job not found")
             if job.account_id not in employer_ids:
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN,
                     detail="Not allowed to change status for this application",
                 )
 
-        application_update = ApplicationUpdate(
-            status=dto.status, message=dto.message)
-        updated = self.application_repository.update(
-            application_id, application_update)
+        application_update = ApplicationUpdate(status=dto.status, message=dto.message)
+        updated = self.application_repository.update(application_id, application_update)
         if not updated:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail="Application not found"

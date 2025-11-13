@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Optional, Sequence
+from collections.abc import Sequence
 from uuid import UUID
 
 from app.domain.models.account import Account, AccountType, AccountUpdate
@@ -13,11 +13,13 @@ class IAccountRepository(ABC):
         """Create a new account in the database."""
 
     @abstractmethod
-    def get_by_id(self, account_id: UUID) -> Optional[Account]:
+    def get_by_id(self, account_id: UUID) -> Account | None:
         """Retrieve an account by ID."""
 
     @abstractmethod
-    def get_user_accounts(self, user_id: UUID, account_type: Optional[AccountType] = None) -> Sequence[Account]:
+    def get_user_accounts(
+        self, user_id: UUID, account_type: AccountType | None = None
+    ) -> Sequence[Account]:
         """Retrieve all accounts for a specific user and account type."""
 
     @abstractmethod
@@ -25,5 +27,5 @@ class IAccountRepository(ABC):
         """Retrieve all accounts."""
 
     @abstractmethod
-    def update(self, account_id: UUID, account_update: AccountUpdate) -> Optional[Account]:
+    def update(self, account_id: UUID, account_update: AccountUpdate) -> Account | None:
         """Update an existing account."""

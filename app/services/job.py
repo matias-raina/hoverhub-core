@@ -1,12 +1,12 @@
-from typing import Optional, Sequence
+from collections.abc import Sequence
 from uuid import UUID
 
 from fastapi import HTTPException, status
 
 from app.domain.models.job import Job, JobUpdate
 from app.domain.repositories.interfaces.job import IJobRepository
-from app.services.interfaces.job import IJobService
 from app.dto.job import CreateJobDto, UpdateJobDto
+from app.services.interfaces.job import IJobService
 
 
 class JobService(IJobService):
@@ -26,13 +26,11 @@ class JobService(IJobService):
         )
         return self.job_repository.create(job)
 
-    def get_by_id(self, account_id: UUID, job_id: UUID) -> Optional[Job]:
+    def get_by_id(self, account_id: UUID, job_id: UUID) -> Job | None:
         """Retrieve a job by ID."""
         job = self.job_repository.get_by_id(job_id)
         if not job:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Job not found"
-            )
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Job not found")
         if job.account_id != account_id:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
@@ -40,9 +38,7 @@ class JobService(IJobService):
             )
         return job
 
-    def get_all(
-        self, offset: int = 0, limit: int = 100
-    ) -> Sequence[Job]:
+    def get_all(self, offset: int = 0, limit: int = 100) -> Sequence[Job]:
         """Retrieve all jobs."""
         return self.job_repository.get_all(offset=offset, limit=limit)
 
@@ -50,9 +46,7 @@ class JobService(IJobService):
         """Update an existing job."""
         job = self.job_repository.get_by_id(job_id)
         if not job:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Job not found"
-            )
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Job not found")
         if job.account_id != account_id:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
@@ -66,9 +60,7 @@ class JobService(IJobService):
         """Delete a job by ID."""
         job = self.job_repository.get_by_id(job_id)
         if not job:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Job not found"
-            )
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Job not found")
         if job.account_id != account_id:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,

@@ -23,7 +23,8 @@ async def signup(request: Request, dto: SignupDTO, auth_service: AuthServiceDep)
     Returns:
         User information and success message
     """
-    user, at, rt = auth_service.signup(request.client.host, dto)
+    host = request.client.host if request.client else "unknown"
+    user, at, rt = auth_service.signup(host, dto)
 
     return {
         "user": {
@@ -52,7 +53,8 @@ async def signin(request: Request, dto: SigninDTO, auth_service: AuthServiceDep)
     Returns:
         Access token, refresh token, and token type
     """
-    at, rt = auth_service.signin(request.client.host, dto)
+    host = request.client.host if request.client else "unknown"
+    at, rt = auth_service.signin(host, dto)
     return {
         "access_token": at,
         "refresh_token": rt,

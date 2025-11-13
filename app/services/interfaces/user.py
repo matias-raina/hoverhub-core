@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Optional, Sequence
+from collections.abc import Sequence
 from uuid import UUID
 
 from app.domain.models.session import UserSession
@@ -8,11 +8,11 @@ from app.domain.models.user import User
 
 class IUserService(ABC):
     @abstractmethod
-    def get_user_by_id(self, user_id: UUID) -> Optional[User]:
+    def get_user_by_id(self, user_id: UUID) -> User | None:
         """Get a user by ID."""
 
     @abstractmethod
-    def get_user_by_email(self, email: str) -> Optional[User]:
+    def get_user_by_email(self, email: str) -> User | None:
         """Get a user by email."""
 
     @abstractmethod

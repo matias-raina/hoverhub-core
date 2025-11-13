@@ -3,7 +3,7 @@ from uuid import UUID
 from fastapi import APIRouter, status
 
 from app.config.dependencies import AccountContextDep, JobServiceDep
-from app.dto.job import UpdateJobDto, CreateJobDto
+from app.dto.job import CreateJobDto, UpdateJobDto
 
 router = APIRouter(prefix="/jobs", tags=["Jobs"])
 

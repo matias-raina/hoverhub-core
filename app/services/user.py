@@ -1,5 +1,5 @@
-from datetime import datetime, timezone
-from typing import Optional, Sequence
+from collections.abc import Sequence
+from datetime import datetime
 from uuid import UUID
 
 from fastapi import HTTPException, status
@@ -12,13 +12,11 @@ from app.services.interfaces.user import IUserService
 
 
 class UserService(IUserService):
-    def __init__(
-        self, user_repository: IUserRepository, session_repository: ISessionRepository
-    ):
+    def __init__(self, user_repository: IUserRepository, session_repository: ISessionRepository):
         self.user_repository = user_repository
         self.session_repository = session_repository
 
-    def get_user_by_id(self, user_id: UUID) -> Optional[User]:
+    def get_user_by_id(self, user_id: UUID) -> User | None:
         """Get a user by ID."""
         user = self.user_repository.get_by_id(user_id)
         if not user:
@@ -28,7 +26,7 @@ class UserService(IUserService):
             )
         return user
 
-    def get_user_by_email(self, email: str) -> Optional[User]:
+    def get_user_by_email(self, email: str) -> User | None:
         """Get a user by email."""
         user = self.user_repository.get_by_email(email)
         if not user:
@@ -51,18 +49,18 @@ class UserService(IUserService):
         if "email" in kwargs:
             user.email = kwargs["email"]
 
-        user.updated_at = datetime.now(timezone.utc)
+        user.updated_at = datetime.now(UTC)
         return self.user_repository.update(user)
 
     def delete_user(self, user_id: UUID) -> bool:
         """Delete a user."""
-        success = self.user_repository.delete(user_id)
+        success = self.user_repository.delete(user_id)  # type: ignore[attr-defined]
         if not success:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"User with ID {user_id} not found",
             )
-        return success
+        return bool(success)
 
     def get_user_sessions(self, user_id: UUID) -> Sequence[UserSession]:
         """Get all sessions for a user."""

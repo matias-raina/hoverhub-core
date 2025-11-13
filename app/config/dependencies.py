@@ -13,28 +13,35 @@ from app.domain.repositories import (
     AccountRepository,
     ApplicationRepository,
     AuthRepository,
+    FavoriteRepository,
     JobRepository,
     SessionRepository,
     UserRepository,
-    FavoriteRepository,
 )
 from app.domain.repositories.interfaces import (
     IAccountRepository,
     IApplicationRepository,
     IAuthRepository,
+    IFavoriteRepository,
     IJobRepository,
     ISessionRepository,
     IUserRepository,
-    IFavoriteRepository,
 )
-from app.services import AccountService, AuthService, JobService, UserService, FavoriteService
+from app.services import (
+    AccountService,
+    ApplicationService,
+    AuthService,
+    FavoriteService,
+    JobService,
+    UserService,
+)
 from app.services.interfaces import (
     IAccountService,
     IApplicationService,
     IAuthService,
+    IFavoriteService,
     IJobService,
     IUserService,
-    IFavoriteService,
 )
 
 # HTTP Bearer scheme for token authentication
@@ -151,8 +158,8 @@ def get_favorite_service(
 ) -> IFavoriteService:
     """Get the favorite service."""
     return FavoriteService(favorite_repository)
-  
-  
+
+
 def get_application_service(
     application_repository: ApplicationRepositoryDep,
     account_repository: AccountRepositoryDep,

@@ -1,5 +1,5 @@
-from datetime import datetime, timezone
-from typing import Optional, Sequence
+from collections.abc import Sequence
+from datetime import datetime
 from uuid import UUID
 
 from sqlmodel import Session, desc, select
@@ -19,11 +19,11 @@ class SessionRepository(ISessionRepository):
         self.session.refresh(session)
         return session
 
-    def get_by_id(self, session_id: str) -> Optional[UserSession]:
+    def get_by_id(self, session_id: UUID) -> UserSession | None:
         """Get a session by its ID."""
         return self.session.get(UserSession, session_id)
 
-    def deactivate(self, session_id: str) -> Optional[UserSession]:
+    def deactivate(self, session_id: UUID) -> UserSession | None:
         """Deactivate an existing session."""
         session = self.session.get(UserSession, session_id)
         if session:
@@ -33,7 +33,7 @@ class SessionRepository(ISessionRepository):
             self.session.refresh(session)
         return session
 
-    def update(self, session: UserSession) -> Optional[UserSession]:
+    def update(self, session: UserSession) -> UserSession | None:
         """Update an existing session."""
         self.session.add(session)
         self.session.commit()
@@ -52,11 +52,9 @@ class SessionRepository(ISessionRepository):
 
     def deactivate_expired_sessions(self) -> int:
         """Deactivate all expired sessions and return the count of deactivated sessions."""
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         statement = (
-            select(UserSession)
-            .where(UserSession.is_active)
-            .where(UserSession.expires_at <= now)
+            select(UserSession).where(UserSession.is_active).where(UserSession.expires_at <= now)
         )
         expired_sessions = list(self.session.exec(statement).all())
 

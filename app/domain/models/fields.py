@@ -1,18 +1,18 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from sqlmodel import Field
 
 
-def created_at_field() -> Field:
+def created_at_field() -> Field:  # type: ignore[valid-type]
     """Factory function that creates a new created_at Field for each model."""
-    return Field(
-        default_factory=lambda: datetime.now(timezone.utc),
+    return Field(  # type: ignore[no-any-return]
+        default_factory=lambda: datetime.now(UTC),
     )
 
 
-def updated_at_field() -> Field:
+def updated_at_field() -> Field:  # type: ignore[valid-type]
     """Factory function that creates a new updated_at Field for each model."""
-    return Field(
-        default_factory=lambda: datetime.now(timezone.utc),
-        sa_column_kwargs={"onupdate": lambda: datetime.now(timezone.utc)},
+    return Field(  # type: ignore[no-any-return]
+        default_factory=lambda: datetime.now(UTC),
+        sa_column_kwargs={"onupdate": lambda: datetime.now(UTC)},
     )

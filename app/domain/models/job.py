@@ -1,6 +1,6 @@
 import uuid
 from datetime import date, datetime
-from typing import TYPE_CHECKING, Optional, List
+from typing import TYPE_CHECKING
 
 from sqlmodel import Field, Relationship, SQLModel
 
@@ -15,8 +15,7 @@ if TYPE_CHECKING:
 class Job(SQLModel, table=True):
     """Job model."""
 
-    id: uuid.UUID = Field(default_factory=uuid.uuid4,
-                          primary_key=True, index=True)
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True, index=True)
     account_id: uuid.UUID = Field(foreign_key="account.id", index=True)
     title: str
     description: str
@@ -35,9 +34,9 @@ class Job(SQLModel, table=True):
 class JobUpdate(SQLModel):
     """Job update model."""
 
-    title: Optional[str] = None
-    description: Optional[str] = None
-    budget: Optional[float] = None
-    location: Optional[str] = None
-    start_date: Optional[date] = None
-    end_date: Optional[date] = None
+    title: str | None = None
+    description: str | None = None
+    budget: float | None = None
+    location: str | None = None
+    start_date: date | None = None
+    end_date: date | None = None

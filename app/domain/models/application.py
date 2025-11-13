@@ -1,7 +1,7 @@
 import enum
 import uuid
 from datetime import datetime
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from sqlmodel import Column, Enum, Field, Relationship, SQLModel
 
@@ -25,7 +25,7 @@ class Application(SQLModel, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True, index=True)
     job_id: uuid.UUID = Field(foreign_key="job.id", index=True)
     account_id: uuid.UUID = Field(foreign_key="account.id", index=True)
-    message: Optional[str] = None
+    message: str | None = None
     status: ApplicationStatus = Field(
         sa_column=Column(Enum(ApplicationStatus)), default=ApplicationStatus.PENDING
     )
@@ -38,9 +38,9 @@ class Application(SQLModel, table=True):
 
 
 class ApplicationCreate(SQLModel):
-    message: Optional[str] = None
+    message: str | None = None
 
 
 class ApplicationUpdate(SQLModel):
-    status: Optional[ApplicationStatus] = None
-    message: Optional[str] = None
+    status: ApplicationStatus | None = None
+    message: str | None = None

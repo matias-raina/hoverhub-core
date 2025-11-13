@@ -1,4 +1,4 @@
-from typing import Sequence, Optional
+from collections.abc import Sequence
 from uuid import UUID
 
 from sqlmodel import Session, select
@@ -21,7 +21,7 @@ class FavoriteRepository(IFavoriteRepository):
         self.session.refresh(favorite)
         return favorite
 
-    def get_by_id(self, favorite_id: UUID) -> Optional[Favorite]:
+    def get_by_id(self, favorite_id: UUID) -> Favorite | None:
         """Retrieve a favorite entry by ID."""
         return self.session.get(Favorite, favorite_id)
 

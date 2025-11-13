@@ -1,4 +1,4 @@
-from typing import Optional, Sequence
+from collections.abc import Sequence
 from uuid import UUID
 
 from fastapi import HTTPException, status
@@ -13,12 +13,10 @@ class AccountService(IAccountService):
     def __init__(self, account_repository: IAccountRepository):
         self.account_repository = account_repository
 
-    def get_account_by_id(self, user_id: UUID, account_id: UUID) -> Optional[Account]:
+    def get_account_by_id(self, user_id: UUID, account_id: UUID) -> Account | None:
         account = self.account_repository.get_by_id(account_id)
         if not account:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Account not found"
-            )
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Account not found")
         if account.user_id != user_id:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
@@ -36,21 +34,16 @@ class AccountService(IAccountService):
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail="User can only have one droner account",
                 )
-        account = Account(user_id=user_id, name=dto.name,
-                          account_type=dto.account_type)
+        account = Account(user_id=user_id, name=dto.name, account_type=dto.account_type)
         return self.account_repository.create(account)
 
     def get_user_accounts(self, user_id: UUID) -> Sequence[Account]:
         return self.account_repository.get_user_accounts(user_id)
 
-    def update_account(
-        self, user_id: UUID, account_id: UUID, dto: UpdateAccountDto
-    ) -> Account:
+    def update_account(self, user_id: UUID, account_id: UUID, dto: UpdateAccountDto) -> Account:
         account = self.account_repository.get_by_id(account_id)
         if not account:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Account not found"
-            )
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Account not found")
         if account.user_id != user_id:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,

@@ -25,8 +25,7 @@ async def create_favorite(
     Returns:
         The created favorite information
     """
-    favorite = favorite_service.create_favorite(
-        account_context.id, dto)
+    favorite = favorite_service.create_favorite(account_context.id, dto)
     return {
         "id": favorite.id,
         "account_id": favorite.account_id,
@@ -50,8 +49,7 @@ async def get_favorites(
     Returns:
         List of favorite information
     """
-    favorites = favorite_service.get_favorites_by_account_id(
-        account_context.id)
+    favorites = favorite_service.get_favorites_by_account_id(account_context.id)
     return [
         {
             "id": favorite.id,

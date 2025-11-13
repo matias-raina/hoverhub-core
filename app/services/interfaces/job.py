@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
-from typing import Optional, Sequence
+from collections.abc import Sequence
 from uuid import UUID
 
-from app.domain.models.job import Job, JobUpdate
+from app.domain.models.job import Job
 from app.dto.job import CreateJobDto, UpdateJobDto
 
 
@@ -12,7 +12,7 @@ class IJobService(ABC):
         """Create a new job."""
 
     @abstractmethod
-    def get_by_id(self, account_id: UUID, job_id: UUID) -> Optional[Job]:
+    def get_by_id(self, account_id: UUID, job_id: UUID) -> Job | None:
         """Retrieve a job by ID."""
 
     @abstractmethod

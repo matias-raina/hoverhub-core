@@ -1,4 +1,4 @@
-from typing import Optional, Sequence
+from collections.abc import Sequence
 from uuid import UUID
 
 from sqlmodel import Session, select
@@ -21,12 +21,12 @@ class AccountRepository(IAccountRepository):
         self.session.refresh(account)
         return account
 
-    def get_by_id(self, account_id: UUID) -> Optional[Account]:
+    def get_by_id(self, account_id: UUID) -> Account | None:
         """Retrieve an account by ID."""
         return self.session.get(Account, account_id)
 
     def get_user_accounts(
-        self, user_id: UUID, account_type: Optional[AccountType] = None
+        self, user_id: UUID, account_type: AccountType | None = None
     ) -> Sequence[Account]:
         """Retrieve all accounts for a specific user and account type."""
         statement = select(Account).where(Account.user_id == user_id)
@@ -38,7 +38,7 @@ class AccountRepository(IAccountRepository):
         """Retrieve all accounts."""
         return self.session.exec(select(Account)).all()
 
-    def update(self, account_id: UUID, account: AccountUpdate) -> Optional[Account]:
+    def update(self, account_id: UUID, account: AccountUpdate) -> Account | None:
         """Update an existing account."""
         db_account = self.get_by_id(account_id)
         if not db_account:

@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Optional, Sequence
+from collections.abc import Sequence
 from uuid import UUID
 
 from app.domain.models.job import Job, JobUpdate
@@ -11,7 +11,7 @@ class IJobRepository(ABC):
         """Create a new job entry in the database."""
 
     @abstractmethod
-    def get_by_id(self, job_id: UUID) -> Optional[Job]:
+    def get_by_id(self, job_id: UUID) -> Job | None:
         """Retrieve a job entry by ID."""
 
     @abstractmethod
@@ -19,7 +19,7 @@ class IJobRepository(ABC):
         """Retrieve all job entries."""
 
     @abstractmethod
-    def update(self, job_id: UUID, job: JobUpdate) -> Optional[Job]:
+    def update(self, job_id: UUID, job: JobUpdate) -> Job | None:
         """Update an existing job entry."""
 
     @abstractmethod

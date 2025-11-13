@@ -16,9 +16,7 @@ async def get_current_user(authenticated_user: AuthenticatedUserDep):
 
 
 @router.get("/sessions", status_code=status.HTTP_200_OK)
-async def get_user_sessions(
-    authenticated_user: AuthenticatedUserDep, user_service: UserServiceDep
-):
+async def get_user_sessions(authenticated_user: AuthenticatedUserDep, user_service: UserServiceDep):
     """
     Get all sessions for the authenticated user.
     """

@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Optional, Sequence
+from collections.abc import Sequence
 from uuid import UUID
 
 from app.domain.models.favorite import Favorite
@@ -11,7 +11,7 @@ class IFavoriteRepository(ABC):
         """Create a new favorite entry in the database."""
 
     @abstractmethod
-    def get_by_id(self, favorite_id: UUID) -> Optional[Favorite]:
+    def get_by_id(self, favorite_id: UUID) -> Favorite | None:
         """Retrieve a favorite entry by ID."""
 
     @abstractmethod
