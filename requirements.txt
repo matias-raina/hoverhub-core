@@ -8,3 +8,6 @@ alembic
 alembic-postgresql-enum
 redis[hiredis]
 orjson
+pytest
+pytest-asyncio
+httpx
