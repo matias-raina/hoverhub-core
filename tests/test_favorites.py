@@ -153,9 +153,7 @@ class TestCreateFavorite:
     def test_create_favorite_wrong_account(self, client, db_session):
         """Test creating a favorite with account that doesn't belong to user"""
         user1 = create_test_user(db_session, email="user4@test.com")
-        account1 = create_test_account(
-            db_session, user1.id, account_type=AccountType.EMPLOYER
-        )
+        create_test_account(db_session, user1.id, account_type=AccountType.EMPLOYER)
 
         user2 = create_test_user(db_session, email="user5@test.com")
         account2 = create_test_account(

@@ -69,7 +69,7 @@ class TestSignin:
     def test_signin_success(self, client, db_session):
         """Test successful signin"""
         # Create user first
-        user = create_test_user(
+        create_test_user(
             db_session,
             email="signin@example.com",
             password="testpassword123",
