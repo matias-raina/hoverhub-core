@@ -27,7 +27,7 @@ from app.domain.repositories.interfaces import (
     IUserRepository,
     IFavoriteRepository,
 )
-from app.services import AccountService, AuthService, JobService, UserService, FavoriteService
+from app.services import AccountService, ApplicationService, AuthService, JobService, UserService, FavoriteService
 from app.services.interfaces import (
     IAccountService,
     IApplicationService,
