@@ -1,13 +1,10 @@
+from collections.abc import Sequence
 from uuid import UUID
 
 from fastapi import HTTPException, status
 
 from app.domain.models.account import Account, AccountType
-from app.domain.models.application import (
-    Application,
-    ApplicationStatus,
-    ApplicationUpdate,
-)
+from app.domain.models.application import Application, ApplicationStatus, ApplicationUpdate
 from app.domain.repositories.interfaces.account import IAccountRepository
 from app.domain.repositories.interfaces.application import IApplicationRepository
 from app.domain.repositories.interfaces.job import IJobRepository
@@ -26,14 +23,14 @@ class ApplicationService(IApplicationService):
         self.account_repository = account_repository
         self.job_repository = job_repository
 
-    def _get_droner_accounts(self, user_id: UUID) -> list[Account]:
+    def _get_droner_accounts(self, user_id: UUID) -> Sequence[Account]:
         return self.account_repository.get_user_accounts(user_id, AccountType.DRONER)
 
-    def _get_employer_accounts(self, user_id: UUID) -> list[Account]:
+    def _get_employer_accounts(self, user_id: UUID) -> Sequence[Account]:
         return self.account_repository.get_user_accounts(user_id, AccountType.EMPLOYER)
 
     def apply_to_job(self, user_id: UUID, job_id: UUID, dto: CreateApplicationDto) -> Application:
-        job = self.job_repository.read_job(job_id)
+        job = self.job_repository.get_by_id(job_id)
         if not job:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Job not found")
 
@@ -48,7 +45,7 @@ class ApplicationService(IApplicationService):
         applicant_account = droner_accounts[0]
 
         # Prevent duplicate application for same account & job
-        existing = self.application_repository.list_by_job(job.id)
+        existing = self.application_repository.get_by_job_id(job.id)
         if any(app.account_id == applicant_account.id for app in existing):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -62,8 +59,8 @@ class ApplicationService(IApplicationService):
         )
         return self.application_repository.create(application)
 
-    def list_applications_for_job(self, user_id: UUID, job_id: UUID) -> list[Application]:
-        job = self.job_repository.read_job(job_id)
+    def list_applications_for_job(self, user_id: UUID, job_id: UUID) -> Sequence[Application]:
+        job = self.job_repository.get_by_id(job_id)
         if not job:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Job not found")
         employer_accounts = self._get_employer_accounts(user_id)
@@ -73,15 +70,15 @@ class ApplicationService(IApplicationService):
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Not authorized to view applications for this job",
             )
-        return self.application_repository.list_by_job(job.id)
+        return self.application_repository.get_by_job_id(job.id)
 
-    def list_applications_for_user(self, user_id: UUID) -> list[Application]:
+    def list_applications_for_user(self, user_id: UUID) -> Sequence[Application]:
         droner_accounts = self._get_droner_accounts(user_id)
         if not droner_accounts:
             return []
-        apps: list[Application] = []
+        apps: Sequence[Application] = []
         for acc in droner_accounts:
-            apps.extend(self.application_repository.list_by_account(acc.id))
+            apps.extend(self.application_repository.get_by_account_id(acc.id))
         return apps
 
     def update_application_status(
@@ -107,7 +104,7 @@ class ApplicationService(IApplicationService):
                 )
         else:
             # Accept/Reject only by employer owning the job
-            job = self.job_repository.read_job(application.job_id)
+            job = self.job_repository.get_by_id(application.job_id)
             if not job:
                 raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Job not found")
             if job.account_id not in employer_ids:
@@ -116,15 +113,15 @@ class ApplicationService(IApplicationService):
                     detail="Not allowed to change status for this application",
                 )
 
-        update_model = ApplicationUpdate(status=dto.status, message=dto.message)
-        updated = self.application_repository.update(application_id, update_model)
+        application_update = ApplicationUpdate(status=dto.status, message=dto.message)
+        updated = self.application_repository.update(application_id, application_update)
         if not updated:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail="Application not found"
             )
         return updated
 
-    def delete_application(self, user_id: UUID, application_id: UUID) -> None:
+    def delete_application(self, user_id: UUID, application_id: UUID) -> bool:
         application = self.application_repository.get_by_id(application_id)
         if not application:
             raise HTTPException(

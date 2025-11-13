@@ -18,7 +18,8 @@ async def create_favorite(
     Create a new favorite entry.
 
     Args:
-        favorite_data: The favorite data to create
+        account_context: The account context from authentication
+        dto: The favorite data to create
         favorite_service: Injected favorite service
 
     Returns:
@@ -42,7 +43,7 @@ async def get_favorites(
     Get all favorite entries for a specific account.
 
     Args:
-        account_id: The account ID to retrieve favorites for
+        account_context: The account context from authentication
         favorite_service: Injected favorite service
 
     Returns:
@@ -70,8 +71,8 @@ async def delete_favorite(
     Delete a favorite entry by ID.
 
     Args:
+        account_context: The account context from authentication
         favorite_id: The ID of the favorite to delete
-        account_context: The account context of the user requesting the deletion
         favorite_service: Injected favorite service
 
     Returns:

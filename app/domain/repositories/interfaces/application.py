@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from collections.abc import Sequence
 from uuid import UUID
 
 from app.domain.models.application import Application, ApplicationUpdate
@@ -14,19 +15,17 @@ class IApplicationRepository(ABC):
         """Retrieve an application by ID."""
 
     @abstractmethod
-    def list_by_job(self, job_id: UUID, offset: int = 0, limit: int = 100) -> list[Application]:
+    def get_by_job_id(self, job_id: UUID, offset: int, limit: int) -> Sequence[Application]:
         """List applications for a given job."""
 
     @abstractmethod
-    def list_by_account(
-        self, account_id: UUID, offset: int = 0, limit: int = 100
-    ) -> list[Application]:
+    def get_by_account_id(self, account_id: UUID, offset: int, limit: int) -> Sequence[Application]:
         """List applications submitted by an account."""
 
     @abstractmethod
     def update(self, application_id: UUID, application: ApplicationUpdate) -> Application | None:
-        """Update an application (e.g. change status or message)."""
+        """Update an existing application entry."""
 
     @abstractmethod
     def delete(self, application_id: UUID) -> bool:
-        """Delete (or withdraw) an application by ID."""
+        """Delete an application by ID."""

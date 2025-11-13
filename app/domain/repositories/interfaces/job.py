@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from collections.abc import Sequence
 from uuid import UUID
 
 from app.domain.models.job import Job, JobUpdate
@@ -10,11 +11,11 @@ class IJobRepository(ABC):
         """Create a new job entry in the database."""
 
     @abstractmethod
-    def read_job(self, job_id: UUID) -> Job | None:
+    def get_by_id(self, job_id: UUID) -> Job | None:
         """Retrieve a job entry by ID."""
 
     @abstractmethod
-    def read_jobs(self, offset: int, limit: int) -> list[Job]:
+    def get_all(self, offset: int, limit: int) -> Sequence[Job]:
         """Retrieve all job entries."""
 
     @abstractmethod

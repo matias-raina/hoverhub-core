@@ -11,6 +11,7 @@ if TYPE_CHECKING:
     from app.domain.models.application import Application
     from app.domain.models.favorite import Favorite
     from app.domain.models.job import Job
+    from app.domain.models.user import User
 
 
 class AccountType(str, enum.Enum):
@@ -31,9 +32,10 @@ class Account(SQLModel, table=True):
     created_at: datetime = created_at_field()
     updated_at: datetime = updated_at_field()
 
-    jobs: list["Job"] = Relationship(back_populates="account")
-    favorites: list["Favorite"] = Relationship(back_populates="account")
-    applications: list["Application"] = Relationship(back_populates="account")
+    user: "User" = Relationship(back_populates="account")
+    applications: List["Application"] = Relationship(back_populates="account")
+    favorites: List["Favorite"] = Relationship(back_populates="account")
+    jobs: List["Job"] = Relationship(back_populates="account")
 
 
 class AccountUpdate(SQLModel):

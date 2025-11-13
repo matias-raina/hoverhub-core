@@ -1,3 +1,4 @@
+from collections.abc import Sequence
 from uuid import UUID
 
 from sqlmodel import Session, select
@@ -21,16 +22,18 @@ class ApplicationRepository(IApplicationRepository):
         """Retrieve an application by ID."""
         return self.session.get(Application, application_id)
 
-    def list_by_job(self, job_id: UUID, offset: int = 0, limit: int = 100) -> list[Application]:
+    def get_by_job_id(
+        self, job_id: UUID, offset: int = 0, limit: int = 100
+    ) -> Sequence[Application]:
         """List applications for a given job."""
         statement = (
             select(Application).where(Application.job_id == job_id).offset(offset).limit(limit)
         )
         return list(self.session.exec(statement).all())
 
-    def list_by_account(
+    def get_by_account_id(
         self, account_id: UUID, offset: int = 0, limit: int = 100
-    ) -> list[Application]:
+    ) -> Sequence[Application]:
         """List applications submitted by an account."""
         statement = (
             select(Application)
@@ -46,7 +49,6 @@ class ApplicationRepository(IApplicationRepository):
         if not db_app:
             return None
         app_data = application.model_dump(exclude_unset=True)
-        # SQLModel provides sqlmodel_update to apply dict updates
         db_app.sqlmodel_update(app_data)
         self.session.add(db_app)
         self.session.commit()

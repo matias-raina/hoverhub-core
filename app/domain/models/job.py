@@ -27,8 +27,8 @@ class Job(SQLModel, table=True):
     updated_at: datetime = updated_at_field()
 
     account: "Account" = Relationship(back_populates="jobs")
-    favorites: list["Favorite"] = Relationship(back_populates="job")
-    applications: list["Application"] = Relationship(back_populates="job")
+    applications: List["Application"] = Relationship(back_populates="job")
+    favorites: List["Favorite"] = Relationship(back_populates="job")
 
 
 class JobUpdate(SQLModel):

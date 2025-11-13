@@ -1,4 +1,5 @@
-from datetime import UTC, datetime
+from collections.abc import Sequence
+from datetime import datetime
 from uuid import UUID
 
 from sqlmodel import Session, desc, select
@@ -32,14 +33,14 @@ class SessionRepository(ISessionRepository):
             self.session.refresh(session)
         return session
 
-    def update(self, session: UserSession) -> UserSession:
+    def update(self, session: UserSession) -> UserSession | None:
         """Update an existing session."""
         self.session.add(session)
         self.session.commit()
         self.session.refresh(session)
         return session
 
-    def get_all_by_user_id(self, user_id: UUID) -> list[UserSession]:
+    def get_all_by_user_id(self, user_id: UUID) -> Sequence[UserSession]:
         """Retrieve all sessions by user ID."""
         statement = (
             select(UserSession)
@@ -47,7 +48,7 @@ class SessionRepository(ISessionRepository):
             .where(UserSession.is_active)
             .order_by(desc(UserSession.created_at))
         )
-        return list(self.session.exec(statement).all())
+        return self.session.exec(statement).all()
 
     def deactivate_expired_sessions(self) -> int:
         """Deactivate all expired sessions and return the count of deactivated sessions."""

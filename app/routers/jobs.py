@@ -1,29 +1,31 @@
 from uuid import UUID
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, status
 
-from app.config.dependencies import JobServiceDep
-from app.domain.models.job import Job, JobUpdate
+from app.config.dependencies import AccountContextDep, JobServiceDep
+from app.dto.job import CreateJobDto, UpdateJobDto
 
 router = APIRouter(prefix="/jobs", tags=["Jobs"])
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
 async def create_job(
-    job_data: Job,
+    account_context: AccountContextDep,
+    dto: CreateJobDto,
     job_service: JobServiceDep,
 ):
     """
     Create a new job.
 
     Args:
-        job_data: The job data to create
+        account_context: The account context from authentication
+        dto: The job data to create
         job_service: Injected job service
 
     Returns:
         The created job information
     """
-    job = job_service.create_job(job_data)
+    job = job_service.create_job(account_context.account_id, dto)
     return {
         "id": job.id,
         "account_id": job.account_id,
@@ -40,6 +42,7 @@ async def create_job(
 
 @router.get("/{job_id}", status_code=status.HTTP_200_OK)
 async def get_job(
+    account_context: AccountContextDep,
     job_id: UUID,
     job_service: JobServiceDep,
 ):
@@ -47,18 +50,14 @@ async def get_job(
     Get a job by ID.
 
     Args:
+        account_context: The account context from authentication
         job_id: The ID of the job to retrieve
         job_service: Injected job service
 
     Returns:
         Job information
     """
-    job = job_service.read_job(job_id)
-    if not job:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Job with ID {job_id} not found",
-        )
+    job = job_service.get_by_id(account_context.account_id, job_id)
     return {
         "id": job.id,
         "account_id": job.account_id,
@@ -90,7 +89,7 @@ async def list_jobs(
     Returns:
         A list of jobs
     """
-    jobs = job_service.read_jobs(offset=offset, limit=limit)
+    jobs = job_service.get_all(offset=offset, limit=limit)
     return [
         {
             "id": job.id,
@@ -110,27 +109,24 @@ async def list_jobs(
 
 @router.put("/{job_id}", status_code=status.HTTP_200_OK)
 async def update_job(
+    account_context: AccountContextDep,
     job_id: UUID,
-    job_data: JobUpdate,
+    dto: UpdateJobDto,
     job_service: JobServiceDep,
 ):
     """
     Update a job by ID.
 
     Args:
+        account_context: The account context from authentication
         job_id: The ID of the job to update
-        job_data: The updated job data
+        dto: The updated job data
         job_service: Injected job service
 
     Returns:
         The updated job information
     """
-    job = job_service.update_job(job_id, job_data)
-    if not job:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Job with ID {job_id} not found",
-        )
+    job = job_service.update_job(account_context.account_id, job_id, dto)
     return {
         "id": job.id,
         "account_id": job.account_id,
@@ -147,6 +143,7 @@ async def update_job(
 
 @router.delete("/{job_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_job(
+    account_context: AccountContextDep,
     job_id: UUID,
     job_service: JobServiceDep,
 ):
@@ -154,7 +151,8 @@ async def delete_job(
     Delete a job by ID.
 
     Args:
+        account_context: The account context from authentication
         job_id: The ID of the job to delete
         job_service: Injected job service
     """
-    job_service.delete_job(job_id)
+    job_service.delete_job(account_context.account_id, job_id)

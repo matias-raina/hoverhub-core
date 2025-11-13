@@ -7,6 +7,7 @@ from sqlmodel import Field, Relationship, SQLModel
 from app.domain.models.fields import created_at_field, updated_at_field
 
 if TYPE_CHECKING:
+    from app.domain.models.account import Account
     from app.domain.models.session import UserSession
 
 
@@ -20,4 +21,5 @@ class User(SQLModel, table=True):
     created_at: datetime = created_at_field()
     updated_at: datetime = updated_at_field()
 
-    sessions: list["UserSession"] = Relationship(back_populates="user")
+    sessions: List["UserSession"] = Relationship(back_populates="user")
+    account: "Account" = Relationship(back_populates="user")
