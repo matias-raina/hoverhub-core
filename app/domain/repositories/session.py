@@ -19,11 +19,11 @@ class SessionRepository(ISessionRepository):
         self.session.refresh(session)
         return session
 
-    def get_by_id(self, session_id: str) -> Optional[UserSession]:
+    def get_by_id(self, session_id: UUID) -> Optional[UserSession]:
         """Get a session by its ID."""
         return self.session.get(UserSession, session_id)
 
-    def deactivate(self, session_id: str) -> Optional[UserSession]:
+    def deactivate(self, session_id: UUID) -> Optional[UserSession]:
         """Deactivate an existing session."""
         session = self.session.get(UserSession, session_id)
         if session:
