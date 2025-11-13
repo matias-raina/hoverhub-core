@@ -1,0 +1,111 @@
+---
+title: HoverHub - Diagrama de Clases
+config:
+  layout: elk
+---
+classDiagram
+direction TB
+
+%% ===== CLASES PRINCIPALES DE USUARIO Y CUENTA =====
+class User {
+  + id: UUID
+  + email: string
+  - hashed_password: string
+  + is_active: bool
+  + created_at: datetime
+  + updated_at: datetime
+  + get_sessions() List~UserSession~
+}
+
+class UserSession {
+  + id: UUID
+  + user_id: UUID
+  + host: string
+  + is_active: bool
+  + expires_at: datetime
+  + created_at: datetime
+  + updated_at: datetime
+  + is_expired() bool
+}
+
+class AccountType {
+  <<enumeration>>
+  DRONER
+  EMPLOYER
+}
+
+class Account {
+  + id: UUID
+  + user_id: UUID
+  + name: string
+  + account_type: AccountType
+  + is_active: bool
+  + created_at: datetime
+  + updated_at: datetime
+  + get_user() User
+  + get_jobs() List~Job~
+  + get_favorites() List~Favorite~
+  + get_applications() List~Application~
+}
+
+%% ===== CLASES DE TRABAJO =====
+class Job {
+  + id: UUID
+  + account_id: UUID
+  + title: string
+  + description: string
+  + budget: float
+  + location: string
+  + start_date: date
+  + end_date: date
+  + created_at: datetime
+  + updated_at: datetime
+  + get_account() Account
+  + get_favorites() List~Favorite~
+  + get_applications() List~Application~
+}
+
+%% ===== CLASE DE APLICACIÓN =====
+class ApplicationStatus {
+  <<enumeration>>
+  PENDING
+  ACCEPTED
+  REJECTED
+  WITHDRAWN
+}
+
+class Application {
+  + id: UUID
+  + job_id: UUID
+  + account_id: UUID
+  + message: string
+  + status: ApplicationStatus
+  + created_at: datetime
+  + updated_at: datetime
+  + get_job() Job
+  + get_account() Account
+}
+
+%% ===== CLASE DE FAVORITO =====
+class Favorite {
+  + id: UUID
+  + job_id: UUID
+  + account_id: UUID
+  + created_at: datetime
+  + get_job() Job
+  + get_account() Account
+}
+
+%% ===== RELACIONES =====
+User "1" --> "0..*" UserSession : tiene sesiones
+User "1" --> "0..*" Account : posee
+
+Account "1" --> "0..*" Job : publica
+Account "1" --> "0..*" Favorite : marca como favorito
+Account "1" --> "0..*" Application : envía
+
+Job "1" --> "0..*" Application : recibe
+Job "1" --> "0..*" Favorite : aparece en
+
+AccountType ..> Account : categoriza
+ApplicationStatus ..> Application : define estado

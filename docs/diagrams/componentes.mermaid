@@ -1,0 +1,107 @@
+---
+title: Diagrama de Arquitectura de Componentes - Sistema HoverHub
+---
+flowchart TB
+    %% Clientes/Usuarios
+    cliente_api["Cliente API<br/>(Frontend futuro, Postman, etc.)"]
+    piloto["Piloto de Drones<br/>Busca trabajos"]
+    empleador["Empleador<br/>Publica trabajos"]
+
+    %% Capa API
+    subgraph api_layer["CAPA API - FastAPI REST"]
+        fastapi["FastAPI Application<br/>CORS, Middleware, Routing"]
+        
+        subgraph routers["Routers (Endpoints)"]
+            auth_router["/auth<br/>Autenticación"]
+            users_router["/users<br/>Usuarios"]
+            accounts_router["/accounts<br/>Cuentas"]
+            jobs_router["/jobs<br/>Trabajos"]
+            applications_router["/applications<br/>Aplicaciones"]
+            favorites_router["/favorites<br/>Favoritos"]
+        end
+    end
+
+    %% Capa de Servicios
+    subgraph services_layer["CAPA DE SERVICIOS - Lógica de Negocio"]
+        auth_service["AuthService<br/>JWT + Sesiones"]
+        user_service["UserService<br/>Gestión de Usuarios"]
+        account_service["AccountService<br/>Gestión de Cuentas"]
+        job_service["JobService<br/>CRUD Trabajos"]
+        application_service["ApplicationService<br/>Postulaciones"]
+        favorite_service["FavoriteService<br/>Favoritos"]
+    end
+
+    %% Capa de Repositorios
+    subgraph repositories_layer["CAPA DE REPOSITORIOS - Acceso a Datos"]
+        auth_repo["AuthRepository"]
+        user_repo["UserRepository"]
+        account_repo["AccountRepository"]
+        job_repo["JobRepository"]
+        application_repo["ApplicationRepository"]
+        favorite_repo["FavoriteRepository"]
+        session_repo["SessionRepository"]
+    end
+
+    %% Capa de Dominio
+    subgraph domain_layer["CAPA DE DOMINIO - Modelos"]
+        models["Domain Models<br/>User, Account, Job<br/>Application, Favorite<br/>UserSession"]
+    end
+
+    %% Capa de Almacenamiento
+    subgraph storage_layer["ALMACENAMIENTO"]
+        db[("PostgreSQL<br/>Base de Datos Principal")]
+        redis[("Redis<br/>Cache & Blacklist Tokens")]
+    end
+
+    %% Conexiones Cliente a API
+    cliente_api -->|"HTTPS/REST<br/>JSON"| fastapi
+    piloto & empleador -.->|"Usa"| cliente_api
+
+    %% API a Routers
+    fastapi --> routers
+
+    %% Routers a Servicios
+    auth_router --> auth_service
+    users_router --> user_service
+    accounts_router --> account_service
+    jobs_router --> job_service
+    applications_router --> application_service
+    favorites_router --> favorite_service
+
+    %% Servicios a Repositorios
+    auth_service --> auth_repo
+    auth_service --> session_repo
+    user_service --> user_repo
+    account_service --> account_repo
+    job_service --> job_repo
+    application_service --> application_repo
+    favorite_service --> favorite_repo
+
+    %% Repositorios a Modelos y Base de Datos
+    auth_repo --> models
+    user_repo --> models
+    account_repo --> models
+    job_repo --> models
+    application_repo --> models
+    favorite_repo --> models
+    session_repo --> models
+
+    models -->|"SQLModel<br/>ORM"| db
+    
+    %% Servicios a Cache
+    auth_service -->|"Cache & Blacklist<br/>JWT Tokens"| redis
+
+    %% Estilos
+    classDef clientClass fill:#fff,stroke:#000,stroke-width:2px,color:#000
+    classDef apiClass fill:#e0e0e0,stroke:#000,stroke-width:2px,color:#000
+    classDef serviceClass fill:#c0c0c0,stroke:#000,stroke-width:2px,color:#000
+    classDef repoClass fill:#d0d0d0,stroke:#000,stroke-width:2px,color:#000
+    classDef domainClass fill:#e8e8e8,stroke:#000,stroke-width:2px,color:#000
+    classDef storageClass fill:#f5f5f5,stroke:#000,stroke-width:2px,color:#000
+
+    class cliente_api,piloto,empleador clientClass
+    class fastapi,auth_router,users_router,accounts_router,jobs_router,applications_router,favorites_router apiClass
+    class auth_service,user_service,account_service,job_service,application_service,favorite_service serviceClass
+    class auth_repo,user_repo,account_repo,job_repo,application_repo,favorite_repo,session_repo repoClass
+    class models domainClass
+    class db,redis storageClass
