@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 from uuid import UUID
 
-from sqlmodel import Session, select
+from sqlmodel import Session, desc, select
 
 from app.domain.models.job import Job, JobUpdate
 from app.domain.repositories.interfaces.job import IJobRepository
@@ -26,7 +26,7 @@ class JobRepository(IJobRepository):
         """Retrieve all job entries ordered by creation date (newest first)."""
         return list(
             self.session.exec(
-                select(Job).order_by(Job.created_at.desc()).offset(offset).limit(limit)
+                select(Job).order_by(desc(Job.created_at)).offset(offset).limit(limit)
             ).all()
         )
 
