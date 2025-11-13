@@ -49,7 +49,7 @@ class TestSignup:
                 "password": "password123",
             },
         )
-        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
     def test_signup_short_password(self, client):
         """Test signup with password shorter than 8 characters"""
@@ -60,7 +60,7 @@ class TestSignup:
                 "password": "short",
             },
         )
-        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
 class TestSignin:
@@ -127,7 +127,7 @@ class TestSignin:
                 "password": "password123",
             },
         )
-        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
     def test_signin_short_password(self, client):
         """Test signin with password shorter than 8 characters"""
@@ -138,7 +138,7 @@ class TestSignin:
                 "password": "short",
             },
         )
-        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
 class TestSignout:
@@ -263,4 +263,4 @@ class TestRefresh:
     def test_refresh_missing_token(self, client):
         """Test refresh without token returns 422"""
         response = client.post("/auth/refresh", json={})
-        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT

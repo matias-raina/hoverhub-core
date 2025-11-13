@@ -55,7 +55,7 @@ class TestCreateJob:
         # For now, we just verify it doesn't crash
         assert response.status_code in [
             status.HTTP_201_CREATED,  # SQLite allows it
-            status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status.HTTP_422_UNPROCESSABLE_CONTENT,
             status.HTTP_400_BAD_REQUEST,
         ]
 
@@ -72,7 +72,7 @@ class TestCreateJob:
             response = client.post("/jobs/", json=job_data)
             # If we get a response, it should be 422 (validation) or 500 (database error)
             assert response.status_code in [
-                status.HTTP_422_UNPROCESSABLE_ENTITY,  # Pydantic validation
+                status.HTTP_422_UNPROCESSABLE_CONTENT,  # Pydantic validation
                 status.HTTP_500_INTERNAL_SERVER_ERROR,  # Database constraint error
             ]
         except Exception:
@@ -100,7 +100,7 @@ class TestCreateJob:
         # For now, we'll just test that it doesn't crash
         assert response.status_code in [
             status.HTTP_201_CREATED,
-            status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status.HTTP_422_UNPROCESSABLE_CONTENT,
             status.HTTP_400_BAD_REQUEST,
         ]
 
@@ -134,7 +134,7 @@ class TestGetJob:
     def test_get_job_invalid_uuid(self, client):
         """Test getting a job with invalid UUID format"""
         response = client.get("/jobs/invalid-uuid")
-        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
 class TestListJobs:
@@ -275,4 +275,4 @@ class TestDeleteJob:
     def test_delete_job_invalid_uuid(self, client):
         """Test deleting a job with invalid UUID format"""
         response = client.delete("/jobs/invalid-uuid")
-        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT

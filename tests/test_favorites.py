@@ -97,7 +97,7 @@ class TestCreateFavorite:
         # SQLite doesn't enforce foreign keys by default, so it might succeed
         assert response.status_code in [
             status.HTTP_201_CREATED,
-            status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status.HTTP_422_UNPROCESSABLE_CONTENT,
             status.HTTP_400_BAD_REQUEST,
         ]
 
@@ -119,7 +119,7 @@ class TestCreateFavorite:
         favorite_data = {}  # Missing job_id
 
         response = client.post("/jobs/favorites/", json=favorite_data, headers=headers)
-        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
     def test_create_favorite_unauthenticated(self, client):
         """Test creating a favorite without authentication"""
@@ -148,7 +148,7 @@ class TestCreateFavorite:
         favorite_data = {"job_id": str(job.id)}
 
         response = client.post("/jobs/favorites/", json=favorite_data, headers=headers)
-        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
     def test_create_favorite_wrong_account(self, client, db_session):
         """Test creating a favorite with account that doesn't belong to user"""
@@ -290,7 +290,7 @@ class TestGetFavorites:
         headers = {"Authorization": f"Bearer {token}"}  # Missing x-account-id
 
         response = client.get("/jobs/favorites/", headers=headers)
-        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
 class TestDeleteFavorite:
@@ -396,7 +396,7 @@ class TestDeleteFavorite:
         headers = {"Authorization": f"Bearer {token}"}  # Missing x-account-id
 
         response = client.delete(f"/jobs/favorites/{favorite.id}", headers=headers)
-        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
     def test_delete_favorite_invalid_uuid(self, client, db_session):
         """Test deleting a favorite with invalid UUID format"""
@@ -414,4 +414,4 @@ class TestDeleteFavorite:
         headers = get_account_headers(token, account.id)
 
         response = client.delete("/jobs/favorites/invalid-uuid", headers=headers)
-        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT

@@ -152,7 +152,7 @@ class TestCreateAccount:
         }
 
         response = client.post("/accounts/", json=account_data, headers=headers)
-        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
     def test_create_account_empty_name(self, client, db_session):
         """Test creating an account with empty name"""
@@ -171,7 +171,7 @@ class TestCreateAccount:
         }
 
         response = client.post("/accounts/", json=account_data, headers=headers)
-        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
 class TestGetUserAccounts:
@@ -343,7 +343,7 @@ class TestGetAccount:
         headers = get_auth_headers(token)
 
         response = client.get("/accounts/invalid-uuid", headers=headers)
-        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
 class TestUpdateAccount:
@@ -474,4 +474,4 @@ class TestUpdateAccount:
         response = client.put(
             f"/accounts/{account.id}", json=update_data, headers=headers
         )
-        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT

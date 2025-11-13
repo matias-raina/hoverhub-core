@@ -10,4 +10,5 @@ redis[hiredis]
 orjson
 pytest
 pytest-asyncio
+pytest-cov
 httpx
