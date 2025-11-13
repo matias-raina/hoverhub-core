@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from typing import List, Optional
+from typing import Optional, Sequence
 from uuid import UUID
 
 from fastapi import HTTPException, status
@@ -64,6 +64,6 @@ class UserService(IUserService):
             )
         return success
 
-    def get_user_sessions(self, user_id: UUID) -> List[UserSession]:
+    def get_user_sessions(self, user_id: UUID) -> Sequence[UserSession]:
         """Get all sessions for a user."""
         return self.session_repository.get_all_by_user_id(user_id)

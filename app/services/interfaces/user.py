@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import List, Optional
+from typing import Optional, Sequence
 from uuid import UUID
 
 from app.domain.models.session import UserSession
@@ -24,5 +24,5 @@ class IUserService(ABC):
         """Delete a user."""
 
     @abstractmethod
-    def get_user_sessions(self, user_id: UUID) -> List[UserSession]:
+    def get_user_sessions(self, user_id: UUID) -> Sequence[UserSession]:
         """Get all sessions for a user."""

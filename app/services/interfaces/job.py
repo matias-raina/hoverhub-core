@@ -1,27 +1,28 @@
 from abc import ABC, abstractmethod
-from typing import List, Optional
+from typing import Optional, Sequence
 from uuid import UUID
 
 from app.domain.models.job import Job, JobUpdate
+from app.dto.job import CreateJobDto, UpdateJobDto
 
 
 class IJobService(ABC):
     @abstractmethod
-    def create_job(self, job: Job) -> Job:
+    def create_job(self, account_id: UUID, dto: CreateJobDto) -> Job:
         """Create a new job."""
 
     @abstractmethod
-    def read_job(self, job_id: UUID) -> Optional[Job]:
+    def get_by_id(self, account_id: UUID, job_id: UUID) -> Optional[Job]:
         """Retrieve a job by ID."""
 
     @abstractmethod
-    def read_jobs(self, offset: int, limit: int) -> List[Job]:
+    def get_all(self, offset: int, limit: int) -> Sequence[Job]:
         """Retrieve all jobs."""
 
     @abstractmethod
-    def update_job(self, job_id: UUID, job: JobUpdate) -> Optional[Job]:
+    def update_job(self, account_id: UUID, job_id: UUID, dto: UpdateJobDto) -> Job:
         """Update an existing job."""
 
     @abstractmethod
-    def delete_job(self, job_id: UUID) -> bool:
+    def delete_job(self, account_id: UUID, job_id: UUID) -> bool:
         """Delete a job by ID."""

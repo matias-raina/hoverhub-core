@@ -1,21 +1,17 @@
-from typing import List, Optional
+from typing import Optional, Sequence
 from uuid import UUID
 
 from fastapi import HTTPException, status
 
 from app.domain.models.account import Account, AccountType, AccountUpdate
-from app.domain.repositories.account import IAccountRepository
-from app.domain.repositories.user import IUserRepository
-from app.dto.account import CreateAccountDto
+from app.domain.repositories.interfaces.account import IAccountRepository
+from app.dto.account import CreateAccountDto, UpdateAccountDto
 from app.services.interfaces.account import IAccountService
 
 
 class AccountService(IAccountService):
-    def __init__(
-        self, account_repository: IAccountRepository, user_repository: IUserRepository
-    ):
+    def __init__(self, account_repository: IAccountRepository):
         self.account_repository = account_repository
-        self.user_repository = user_repository
 
     def get_account_by_id(self, user_id: UUID, account_id: UUID) -> Optional[Account]:
         account = self.account_repository.get_by_id(account_id)
@@ -31,7 +27,6 @@ class AccountService(IAccountService):
         return account
 
     def create_account(self, user_id: UUID, dto: CreateAccountDto) -> Account:
-        # Users can only have one droner account and multiple employer accounts
         if dto.account_type == AccountType.DRONER:
             existing_droner_accounts = self.account_repository.get_user_accounts(
                 user_id, AccountType.DRONER
@@ -45,11 +40,11 @@ class AccountService(IAccountService):
                           account_type=dto.account_type)
         return self.account_repository.create(account)
 
-    def get_user_accounts(self, user_id: UUID) -> List[Account]:
+    def get_user_accounts(self, user_id: UUID) -> Sequence[Account]:
         return self.account_repository.get_user_accounts(user_id)
 
     def update_account(
-        self, user_id: UUID, account_id: UUID, account_update: AccountUpdate
+        self, user_id: UUID, account_id: UUID, dto: UpdateAccountDto
     ) -> Account:
         account = self.account_repository.get_by_id(account_id)
         if not account:
@@ -59,6 +54,7 @@ class AccountService(IAccountService):
         if account.user_id != user_id:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail="You are not authorized to access this account",
+                detail="You are not authorized to update this account",
             )
+        account_update = AccountUpdate(**dto.model_dump(exclude_unset=True))
         return self.account_repository.update(account_id, account_update)
