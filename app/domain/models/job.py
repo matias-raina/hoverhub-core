@@ -8,6 +8,7 @@ from app.domain.models.fields import created_at_field, updated_at_field
 
 if TYPE_CHECKING:
     from app.domain.models.account import Account
+    from app.domain.models.application import Application
     from app.domain.models.favorite import Favorite
 
 
@@ -27,6 +28,7 @@ class Job(SQLModel, table=True):
     updated_at: datetime = updated_at_field()
 
     account: "Account" = Relationship(back_populates="jobs")
+    applications: List["Application"] = Relationship(back_populates="job")
     favorites: List["Favorite"] = Relationship(back_populates="job")
 
 

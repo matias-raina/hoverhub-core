@@ -8,12 +8,14 @@ from app.domain.models.fields import created_at_field, updated_at_field
 
 if TYPE_CHECKING:
     from app.domain.models.session import UserSession
+    from app.domain.models.account import Account
 
 
 class User(SQLModel, table=True):
     """User model."""
 
-    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True, index=True)
+    id: uuid.UUID = Field(default_factory=uuid.uuid4,
+                          primary_key=True, index=True)
     email: str = Field(unique=True, index=True)
     hashed_password: str
     is_active: bool = Field(default=True)
@@ -21,3 +23,4 @@ class User(SQLModel, table=True):
     updated_at: datetime = updated_at_field()
 
     sessions: List["UserSession"] = Relationship(back_populates="user")
+    account: "Account" = Relationship(back_populates="user")
