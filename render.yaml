@@ -2,10 +2,11 @@ services:
   # Web Service - HoverHub API
   - type: web
     name: hoverhub-api
-    runtime: docker
     # Option 1: Use published Docker image (recommended if already published)
-    dockerImage: lucasach/hoverhub-api:latest
+    runtime: image
+    image: lucasach/hoverhub-api:latest
     # Option 2: Build from Dockerfile (uncomment if you prefer to build on Render)
+    # runtime: docker
     # dockerfilePath: ./Dockerfile
     # dockerContext: .
     dockerCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT --workers 4 --log-level info
@@ -16,11 +17,7 @@ services:
         value: production
       - key: HOST
         value: 0.0.0.0
-      - key: PORT
-        fromService:
-          type: web
-          name: hoverhub-api
-          property: port
+      # PORT is automatically provided by Render, no need to set it explicitly
       - key: DB_CONNECTION_STRING
         fromDatabase:
           name: hoverhub-db
