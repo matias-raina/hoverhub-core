@@ -3,6 +3,7 @@ import uuid
 from datetime import datetime
 from typing import TYPE_CHECKING
 
+from sqlalchemy import UniqueConstraint
 from sqlmodel import Column, Enum, Field, Relationship, SQLModel
 
 from app.domain.models.fields import created_at_field, updated_at_field
@@ -21,6 +22,9 @@ class ApplicationStatus(str, enum.Enum):
 
 class Application(SQLModel, table=True):
     """Application model: a Droner applies to a Job posted by an Account."""
+
+    # Add constraint to only allow one application per account per job
+    __table_args__ = (UniqueConstraint("job_id", "account_id", name="uix_application_job_account"),)
 
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True, index=True)
     job_id: uuid.UUID = Field(foreign_key="job.id", index=True)

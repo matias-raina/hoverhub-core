@@ -25,3 +25,7 @@ class IJobRepository(ABC):
     @abstractmethod
     def delete(self, job_id: UUID) -> bool:
         """Delete a job entry by ID."""
+
+    @abstractmethod
+    def get_total_applications(self, job_id: UUID) -> int:
+        """Get the total number of applications for a job."""

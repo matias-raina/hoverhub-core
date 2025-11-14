@@ -3,7 +3,8 @@ from uuid import UUID
 
 from fastapi import APIRouter, Query, status
 
-from app.config.dependencies import AuthenticatedAccountDep, JobServiceDep
+from app.config.dependencies import ApplicationServiceDep, AuthenticatedAccountDep, JobServiceDep
+from app.dto.application import CreateApplicationDto
 from app.dto.job import CreateJobDto, UpdateJobDto
 
 router = APIRouter(prefix="/jobs", tags=["Jobs"])
@@ -164,3 +165,43 @@ async def delete_job(
         job_service: Injected job service
     """
     job_service.delete_job(authenticated_account.id, job_id)
+
+
+@router.get("/{job_id}/applications", status_code=status.HTTP_200_OK)
+async def list_applications_for_job(
+    job_id: UUID,
+    authenticated_account: AuthenticatedAccountDep,
+    application_service: ApplicationServiceDep,
+):
+    applications = application_service.list_applications_for_job(authenticated_account.id, job_id)
+    return [
+        {
+            "id": app.id,
+            "job_id": app.job_id,
+            "account_id": app.account_id,
+            "status": app.status,
+            "message": app.message,
+            "created_at": app.created_at,
+            "updated_at": app.updated_at,
+        }
+        for app in applications
+    ]
+
+
+@router.post("/{job_id}/applications", status_code=status.HTTP_201_CREATED)
+async def apply_to_job(
+    authenticated_account: AuthenticatedAccountDep,
+    job_id: UUID,
+    dto: CreateApplicationDto,
+    application_service: ApplicationServiceDep,
+):
+    application = application_service.apply_to_job(authenticated_account.id, job_id, dto)
+    return {
+        "id": application.id,
+        "job_id": application.job_id,
+        "account_id": application.account_id,
+        "status": application.status,
+        "message": application.message,
+        "created_at": application.created_at,
+        "updated_at": application.updated_at,
+    }

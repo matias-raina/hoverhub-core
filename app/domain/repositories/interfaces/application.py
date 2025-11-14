@@ -23,6 +23,10 @@ class IApplicationRepository(ABC):
         """List applications submitted by an account."""
 
     @abstractmethod
+    def get_by_job_and_account(self, job_id: UUID, account_id: UUID) -> Application | None:
+        """Get an application by job_id and account_id, if it exists."""
+
+    @abstractmethod
     def update(self, application_id: UUID, application: ApplicationUpdate) -> Application | None:
         """Update an existing application entry."""
 
