@@ -2,6 +2,7 @@ from uuid import uuid4
 
 from app.domain.models.account import AccountType
 from app.domain.models.application import ApplicationStatus
+from app.domain.models.job import JobUpdate
 from app.domain.repositories.job import JobRepository
 from tests.utils import (
     create_test_account,
@@ -9,6 +10,44 @@ from tests.utils import (
     create_test_job,
     create_test_user,
 )
+
+
+class TestJobRepositoryUpdate:
+    """Tests for JobRepository.update"""
+
+    def test_update_job_success(self, db_session):
+        """Test updating a job successfully"""
+        # Arrange
+        user = create_test_user(db_session)
+        account = create_test_account(db_session, user.id)
+        job = create_test_job(
+            db_session, account.id, title="Original Title", description="Original Description"
+        )
+
+        repository = JobRepository(db_session)
+        update_data = JobUpdate(title="Updated Title", description="Updated Description")
+
+        # Act
+        result = repository.update(job.id, update_data)
+
+        # Assert
+        assert result is not None
+        assert result.id == job.id
+        assert result.title == "Updated Title"
+        assert result.description == "Updated Description"
+
+    def test_update_job_not_found(self, db_session):
+        """Test updating a job that doesn't exist"""
+        # Arrange
+        repository = JobRepository(db_session)
+        non_existent_id = uuid4()
+        update_data = JobUpdate(title="Updated Title")
+
+        # Act
+        result = repository.update(non_existent_id, update_data)
+
+        # Assert
+        assert result is None
 
 
 class TestJobRepositoryGetTotalApplications:

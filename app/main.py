@@ -2,7 +2,7 @@ from datetime import datetime
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import ORJSONResponse
+from fastapi.responses import ORJSONResponse, RedirectResponse
 
 from app.config.settings import get_settings
 from app.routers import routers
@@ -26,6 +26,12 @@ app.add_middleware(
 
 for router in routers:
     app.include_router(router)
+
+
+@app.get("/", include_in_schema=False)
+async def root():
+    """Redirect root path to /docs"""
+    return RedirectResponse(url="/docs")
 
 
 @app.get("/health", tags=["Health"])
