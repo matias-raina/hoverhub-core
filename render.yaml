@@ -44,4 +44,4 @@ services:
     region: oregon
     maxmemoryPolicy: allkeys-lru
     ipAllowList:
-      - 0.0.0.0/0 # TODO: Replace with hoverhub-api outbound IPs after first deploy
+      - source: 0.0.0.0/0
