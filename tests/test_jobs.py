@@ -42,7 +42,7 @@ class TestCreateJob:
         assert data["account_id"] == str(account.id)
         assert "id" in data
         assert "created_at" in data
-        assert "updated_at" in data
+        assert "updated_at" in None
 
     def test_create_job_invalid_account_id(self, client, db_session):
         """Test creating a job with invalid account_id in header"""

@@ -7,7 +7,7 @@ from fastapi import HTTPException, status
 
 from app.domain.models.job import Job
 from app.domain.repositories.interfaces.job import IJobRepository
-from app.dto.job import CreateJobDto, UpdateJobDto
+from app.dto.job import UpdateJobDto
 from app.services.job import JobService
 
 
