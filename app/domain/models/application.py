@@ -23,7 +23,6 @@ class ApplicationStatus(str, enum.Enum):
 class Application(SQLModel, table=True):
     """Application model: a Droner applies to a Job posted by an Account."""
 
-    # Add constraint to only allow one application per account per job
     __table_args__ = (UniqueConstraint("job_id", "account_id", name="uix_application_job_account"),)
 
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True, index=True)
@@ -36,7 +35,6 @@ class Application(SQLModel, table=True):
     created_at: datetime = created_at_field()
     updated_at: datetime = updated_at_field()
 
-    # Relationships (back_populates can be added on the other side later)
     job: "Job" = Relationship(back_populates="applications")
     account: "Account" = Relationship(back_populates="applications")
 
