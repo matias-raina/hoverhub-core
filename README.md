@@ -318,8 +318,8 @@ Para ver la documentación completa de la API, visita http://localhost:8000/docs
 
 El proyecto cuenta con una suite de pruebas completa:
 
-- **Total de pruebas:** 150+
-- **Cobertura:** ~95%
+- **Total de pruebas:** 200+
+- **Cobertura:** ~97%
 - **Archivos de prueba:** 7 módulos principales
 
 Las pruebas cubren:
