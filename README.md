@@ -334,6 +334,34 @@ Las pruebas cubren:
 
 ---
 
+## Despliegue en Render
+
+### Actualizar la imagen Docker
+
+Después de hacer cambios en el código, sigue estos pasos para actualizar la imagen en Render:
+
+1. **Construir la nueva imagen:**
+
+   ```bash
+   docker build -t lucasach/hoverhub-api:latest .
+   ```
+
+2. **Subir la imagen a Docker Hub:**
+
+   ```bash
+   docker push lucasach/hoverhub-api:latest
+   ```
+
+3. **Redeployar en Render:**
+   - Ve al dashboard de Render
+   - Selecciona el servicio `hoverhub-api`
+   - Haz clic en "Manual Deploy" → "Deploy latest commit"
+   - O simplemente espera a que Render detecte el cambio automáticamente
+
+Render usará automáticamente la nueva imagen con el tag `latest` en el próximo despliegue.
+
+---
+
 ## Requerimientos no funcionales
 
 - **Escalabilidad:** arquitectura modular que permite agregar nuevas funcionalidades
