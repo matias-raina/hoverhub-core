@@ -2,13 +2,9 @@ services:
   # Web Service - HoverHub API
   - type: web
     name: hoverhub-api
-    # Option 1: Use published Docker image (recommended if already published)
-    runtime: image
-    image: lucasach/hoverhub-api:latest
-    # Option 2: Build from Dockerfile (uncomment if you prefer to build on Render)
-    # runtime: docker
-    # dockerfilePath: ./Dockerfile
-    # dockerContext: .
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
     dockerCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT --workers 4 --log-level info
     plan: free
     region: oregon
