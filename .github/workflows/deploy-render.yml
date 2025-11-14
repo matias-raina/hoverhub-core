@@ -33,6 +33,13 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run tests
+        env:
+          DB_CONNECTION_STRING: "sqlite:///test.db"
+          CACHE_CONNECTION_STRING: "redis://localhost:6379/0"
+          SECRET_KEY: "test-secret-key-for-testing-only-not-for-production"
+          ALGORITHM: "HS256"
+          ACCESS_TOKEN_EXPIRE_MINUTES: "30"
+          REFRESH_TOKEN_EXPIRE_MINUTES: "1440"
         run: |
           pytest tests/ -v
 
