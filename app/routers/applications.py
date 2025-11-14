@@ -2,20 +2,53 @@ from uuid import UUID
 
 from fastapi import APIRouter, status
 
-from app.config.dependencies import ApplicationServiceDep, AuthenticatedUserDep
-from app.dto.application import CreateApplicationDto, UpdateApplicationStatusDto
+from app.config.dependencies import (
+    ApplicationServiceDep,
+    AuthenticatedAccountDep,
+)
 
 router = APIRouter(prefix="/applications", tags=["Applications"])
 
 
-@router.post("/jobs/{job_id}", status_code=status.HTTP_201_CREATED)
-async def apply_to_job(
-    job_id: UUID,
-    dto: CreateApplicationDto,
-    authenticated_user: AuthenticatedUserDep,
+@router.get("/", status_code=status.HTTP_200_OK)
+async def list_applications_for_account(
+    authenticated_account: AuthenticatedAccountDep,
     application_service: ApplicationServiceDep,
 ):
-    application = application_service.apply_to_job(authenticated_user.id, job_id, dto)
+    """
+    List all applications submitted by the authenticated DRONER account.
+
+    Only DRONER accounts can access this endpoint.
+    """
+    applications = application_service.list_applications_for_account(authenticated_account.id)
+    return [
+        {
+            "id": app.id,
+            "job_id": app.job_id,
+            "account_id": app.account_id,
+            "status": app.status,
+            "message": app.message,
+            "created_at": app.created_at,
+            "updated_at": app.updated_at,
+        }
+        for app in applications
+    ]
+
+
+@router.get("/{application_id}", status_code=status.HTTP_200_OK)
+async def get_application(
+    application_id: UUID,
+    authenticated_account: AuthenticatedAccountDep,
+    application_service: ApplicationServiceDep,
+):
+    """
+    Get a specific application by ID.
+
+    Accessible by:
+    - The DRONER account that submitted the application
+    - The EMPLOYER account that owns the job
+    """
+    application = application_service.get_application(authenticated_account.id, application_id)
     return {
         "id": application.id,
         "job_id": application.job_id,
@@ -27,72 +60,70 @@ async def apply_to_job(
     }
 
 
-@router.get("/jobs/{job_id}", status_code=status.HTTP_200_OK)
-async def list_applications_for_job(
-    job_id: UUID,
-    authenticated_user: AuthenticatedUserDep,
-    application_service: ApplicationServiceDep,
-):
-    applications = application_service.list_applications_for_job(authenticated_user.id, job_id)
-    return [
-        {
-            "id": app.id,
-            "job_id": app.job_id,
-            "account_id": app.account_id,
-            "status": app.status,
-            "message": app.message,
-            "created_at": app.created_at,
-            "updated_at": app.updated_at,
-        }
-        for app in applications
-    ]
-
-
-@router.get("/", status_code=status.HTTP_200_OK)
-async def list_applications_for_user(
-    authenticated_user: AuthenticatedUserDep,
-    application_service: ApplicationServiceDep,
-):
-    applications = application_service.list_applications_for_user(authenticated_user.id)
-    return [
-        {
-            "id": app.id,
-            "job_id": app.job_id,
-            "account_id": app.account_id,
-            "status": app.status,
-            "message": app.message,
-            "created_at": app.created_at,
-            "updated_at": app.updated_at,
-        }
-        for app in applications
-    ]
-
-
-@router.patch("/{application_id}", status_code=status.HTTP_200_OK)
-async def update_application_status(
+@router.post("/{application_id}/withdraw", status_code=status.HTTP_200_OK)
+async def withdraw_application(
     application_id: UUID,
-    dto: UpdateApplicationStatusDto,
-    authenticated_user: AuthenticatedUserDep,
+    authenticated_account: AuthenticatedAccountDep,
     application_service: ApplicationServiceDep,
 ):
-    updated = application_service.update_application_status(
-        authenticated_user.id, application_id, dto
-    )
+    """
+    Withdraw an application (set status to WITHDRAWN).
+
+    Only the DRONER account that submitted the application can withdraw it.
+    """
+    application = application_service.withdraw_application(authenticated_account.id, application_id)
     return {
-        "id": updated.id,
-        "job_id": updated.job_id,
-        "account_id": updated.account_id,
-        "status": updated.status,
-        "message": updated.message,
-        "created_at": updated.created_at,
-        "updated_at": updated.updated_at,
+        "id": application.id,
+        "job_id": application.job_id,
+        "account_id": application.account_id,
+        "status": application.status,
+        "message": application.message,
+        "created_at": application.created_at,
+        "updated_at": application.updated_at,
     }
 
 
-@router.delete("/{application_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_application(
+@router.post("/{application_id}/accept", status_code=status.HTTP_200_OK)
+async def accept_application(
     application_id: UUID,
-    authenticated_user: AuthenticatedUserDep,
+    authenticated_account: AuthenticatedAccountDep,
     application_service: ApplicationServiceDep,
 ):
-    application_service.delete_application(authenticated_user.id, application_id)
+    """
+    Accept an application (set status to ACCEPTED).
+
+    Only the EMPLOYER account that owns the job can accept applications.
+    """
+    application = application_service.accept_application(authenticated_account.id, application_id)
+    return {
+        "id": application.id,
+        "job_id": application.job_id,
+        "account_id": application.account_id,
+        "status": application.status,
+        "message": application.message,
+        "created_at": application.created_at,
+        "updated_at": application.updated_at,
+    }
+
+
+@router.post("/{application_id}/reject", status_code=status.HTTP_200_OK)
+async def reject_application(
+    application_id: UUID,
+    authenticated_account: AuthenticatedAccountDep,
+    application_service: ApplicationServiceDep,
+):
+    """
+    Reject an application (set status to REJECTED).
+
+    Only the EMPLOYER account that owns the job can reject applications.
+    """
+    application = application_service.reject_application(authenticated_account.id, application_id)
+    return {
+        "id": application.id,
+        "job_id": application.job_id,
+        "account_id": application.account_id,
+        "status": application.status,
+        "message": application.message,
+        "created_at": application.created_at,
+        "updated_at": application.updated_at,
+    }

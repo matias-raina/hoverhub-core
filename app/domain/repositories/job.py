@@ -50,3 +50,10 @@ class JobRepository(IJobRepository):
             self.session.commit()
             return True
         return False
+
+    def get_total_applications(self, job_id: UUID) -> int:
+        """Get the total number of applications for a job."""
+        job = self.get_by_id(job_id)
+        if not job:
+            return 0
+        return len(job.applications)

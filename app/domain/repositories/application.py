@@ -43,6 +43,13 @@ class ApplicationRepository(IApplicationRepository):
         )
         return list(self.session.exec(statement).all())
 
+    def get_by_job_and_account(self, job_id: UUID, account_id: UUID) -> Application | None:
+        """Get an application by job_id and account_id, if it exists."""
+        statement = select(Application).where(
+            Application.job_id == job_id, Application.account_id == account_id
+        )
+        return self.session.exec(statement).first()
+
     def update(self, application_id: UUID, application: ApplicationUpdate) -> Application | None:
         """Update an existing application entry."""
         db_app = self.get_by_id(application_id)
