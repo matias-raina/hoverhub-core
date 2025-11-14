@@ -824,6 +824,83 @@ class TestAuthServiceGetAuthenticatedAccount:
         assert exc_info.value.status_code == status.HTTP_403_FORBIDDEN
         assert "not authorized" in str(exc_info.value.detail).lower()
 
+    def test_get_authenticated_account_deactivated(self):
+        """Test getting account that has been deactivated"""
+        # Arrange
+        user_id = uuid4()
+        account_id = uuid4()
+        session_id = uuid4()
+        jti = "test-jti"
+        exp = int(dt.now(datetime.UTC).timestamp()) + 3600
+
+        mock_user = User(
+            id=user_id,
+            email="test@example.com",
+            hashed_password="hashed",
+            is_active=True,
+            created_at=dt.now(datetime.UTC),
+            updated_at=dt.now(datetime.UTC),
+        )
+
+        mock_account = Account(
+            id=account_id,
+            user_id=user_id,
+            name="Test Account",
+            account_type=AccountType.EMPLOYER,
+            is_active=False,  # Deactivated
+            created_at=dt.now(datetime.UTC),
+            updated_at=dt.now(datetime.UTC),
+        )
+
+        expires_at = dt.now(datetime.UTC) + datetime.timedelta(hours=1)
+        mock_session = UserSession(
+            id=session_id,
+            user_id=user_id,
+            host="127.0.0.1",
+            is_active=True,
+            expires_at=expires_at,
+            created_at=dt.now(datetime.UTC),
+            updated_at=dt.now(datetime.UTC),
+        )
+
+        mock_cache = MagicMock()
+        mock_cache.get.return_value = None
+
+        mock_auth_repository = MagicMock(spec=IAuthRepository)
+        mock_auth_repository.decode_token.return_value = {
+            "sub": str(user_id),
+            "sid": str(session_id),
+            "type": JwtTokenType.ACCESS.value,
+            "iat": int(dt.now(datetime.UTC).timestamp()),
+            "exp": exp,
+            "jti": jti,
+        }
+
+        mock_user_repository = MagicMock(spec=IUserRepository)
+        mock_user_repository.get_by_id.return_value = mock_user
+
+        mock_session_repository = MagicMock(spec=ISessionRepository)
+        mock_session_repository.get_by_id.return_value = mock_session
+
+        mock_account_repository = MagicMock(spec=IAccountRepository)
+        mock_account_repository.get_by_id.return_value = mock_account
+
+        service = AuthService(
+            mock_cache,
+            mock_auth_repository,
+            mock_user_repository,
+            mock_session_repository,
+            mock_account_repository,
+        )
+
+        # Act & Assert
+        with pytest.raises(HTTPException) as exc_info:
+            service.get_authenticated_account("test-token", account_id)
+
+        assert exc_info.value.status_code == status.HTTP_403_FORBIDDEN
+        assert "deactivated" in str(exc_info.value.detail).lower()
+        mock_account_repository.get_by_id.assert_called_once_with(account_id)
+
 
 class TestAuthServiceGetAuthenticatedUser:
     """Tests for AuthService.get_authenticated_user"""

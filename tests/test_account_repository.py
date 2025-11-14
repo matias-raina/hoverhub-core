@@ -1,4 +1,6 @@
-from app.domain.models.account import AccountType
+from uuid import uuid4
+
+from app.domain.models.account import AccountType, AccountUpdate
 from app.domain.repositories.account import AccountRepository
 from tests.utils import create_test_account, create_test_user
 
@@ -156,3 +158,37 @@ class TestAccountRepositoryGetAll:
         # Should be able to convert to list
         accounts_list = list(accounts)
         assert isinstance(accounts_list, list)
+
+
+class TestAccountRepositoryUpdate:
+    """Tests for AccountRepository.update"""
+
+    def test_update_account_success(self, db_session):
+        """Test updating an account successfully"""
+        # Arrange
+        user = create_test_user(db_session)
+        account = create_test_account(db_session, user.id, name="Original Name")
+
+        repository = AccountRepository(db_session)
+        update_data = AccountUpdate(name="Updated Name")
+
+        # Act
+        result = repository.update(account.id, update_data)
+
+        # Assert
+        assert result is not None
+        assert result.id == account.id
+        assert result.name == "Updated Name"
+
+    def test_update_account_not_found(self, db_session):
+        """Test updating an account that doesn't exist"""
+        # Arrange
+        repository = AccountRepository(db_session)
+        non_existent_id = uuid4()
+        update_data = AccountUpdate(name="Updated Name")
+
+        # Act
+        result = repository.update(non_existent_id, update_data)
+
+        # Assert
+        assert result is None

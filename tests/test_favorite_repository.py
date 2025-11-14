@@ -1,3 +1,5 @@
+from uuid import uuid4
+
 from app.domain.repositories.favorite import FavoriteRepository
 from tests.utils import (
     create_test_account,
@@ -271,3 +273,38 @@ class TestFavoriteRepositoryGetAll:
         assert job1.id in job_ids
         assert job2.id in job_ids
         assert job3.id in job_ids
+
+
+class TestFavoriteRepositoryDelete:
+    """Tests for FavoriteRepository.delete"""
+
+    def test_delete_favorite_success(self, db_session):
+        """Test deleting a favorite successfully"""
+        # Arrange
+        user = create_test_user(db_session)
+        account = create_test_account(db_session, user.id)
+        job = create_test_job(db_session, account.id)
+        favorite = create_test_favorite(db_session, account.id, job.id)
+
+        repository = FavoriteRepository(db_session)
+
+        # Act
+        result = repository.delete(favorite.id)
+
+        # Assert
+        assert result is True
+        # Verify favorite was deleted
+        deleted_favorite = repository.get_by_id(favorite.id)
+        assert deleted_favorite is None
+
+    def test_delete_favorite_not_found(self, db_session):
+        """Test deleting a favorite that doesn't exist"""
+        # Arrange
+        repository = FavoriteRepository(db_session)
+        non_existent_id = uuid4()
+
+        # Act
+        result = repository.delete(non_existent_id)
+
+        # Assert
+        assert result is False

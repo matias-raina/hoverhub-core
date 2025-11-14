@@ -320,4 +320,3 @@ class TestJobServiceDeleteJob:
         assert "not authorized" in str(exc_info.value.detail).lower()
         mock_job_repository.get_by_id.assert_called_once_with(job_id)
         mock_job_repository.delete.assert_not_called()
-
