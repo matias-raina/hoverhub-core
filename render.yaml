@@ -18,10 +18,10 @@ services:
       - key: HOST
         value: 0.0.0.0
       # PORT is automatically provided by Render, no need to set it explicitly
+      # Database connection string - set this in Render dashboard or use sync: false
       - key: DB_CONNECTION_STRING
-        fromDatabase:
-          name: hoverhub-db
-          property: connectionString
+        sync: false
+        # Example format: postgresql://user:password@host:port/database
       # Redis connection (optional - comment out if not using Redis on free tier)
       - key: CACHE_CONNECTION_STRING
         fromService:
