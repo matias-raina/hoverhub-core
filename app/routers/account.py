@@ -85,11 +85,6 @@ async def get_account(
         Account information
     """
     account = account_service.get_account_by_id(authenticated_user.id, account_id)
-    if not account:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Account with ID {account_id} not found",
-        )
     return {
         "id": account.id,
         "user_id": account.user_id,
