@@ -11,11 +11,11 @@ class IAuthService(ABC):
     """Auth service interface."""
 
     @abstractmethod
-    def signup(self, host: str, dto: SignupDTO) -> tuple[User, str, str]:
+    def signup(self, client_ip: str, dto: SignupDTO) -> tuple[User, str, str]:
         """Register a new user."""
 
     @abstractmethod
-    def signin(self, host: str, dto: SigninDTO) -> tuple[str, str]:
+    def signin(self, client_ip: str, dto: SigninDTO) -> tuple[str, str]:
         """Authenticate a user and return JWT access token and refresh token."""
 
     @abstractmethod

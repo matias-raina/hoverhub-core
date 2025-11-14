@@ -11,6 +11,41 @@ class RefreshTokenRequest(BaseModel):
     refresh_token: str
 
 
+def get_client_ip(request: Request) -> str:
+    """
+    Get the real client IP address from the request.
+
+    Checks proxy headers (X-Forwarded-For, X-Real-IP) first, then falls back
+    to request.client.host. This ensures we get the actual client IP even when
+    behind a proxy or load balancer.
+
+    Args:
+        request: FastAPI Request object
+
+    Returns:
+        Client IP address as a string, or "unknown" if unavailable
+    """
+    # Check X-Forwarded-For header (most common proxy header)
+    # Format: "client_ip, proxy1_ip, proxy2_ip"
+    forwarded_for = request.headers.get("X-Forwarded-For")
+    if forwarded_for:
+        # Take the first IP (the original client)
+        client_ip = forwarded_for.split(",")[0].strip()
+        if client_ip:
+            return client_ip
+
+    # Check X-Real-IP header (alternative proxy header)
+    real_ip = request.headers.get("X-Real-IP")
+    if real_ip:
+        return real_ip.strip()
+
+    # Fall back to request.client.host (direct connection or no proxy headers)
+    if request.client:
+        return request.client.host
+
+    return "unknown"
+
+
 @router.post("/signup", status_code=status.HTTP_201_CREATED)
 async def signup(request: Request, dto: SignupDTO, auth_service: AuthServiceDep):
     """
@@ -23,8 +58,8 @@ async def signup(request: Request, dto: SignupDTO, auth_service: AuthServiceDep)
     Returns:
         User information and success message
     """
-    host = request.client.host if request.client else "unknown"
-    user, at, rt = auth_service.signup(host, dto)
+    client_ip = get_client_ip(request)
+    user, at, rt = auth_service.signup(client_ip, dto)
 
     return {
         "user": {
@@ -53,8 +88,8 @@ async def signin(request: Request, dto: SigninDTO, auth_service: AuthServiceDep)
     Returns:
         Access token, refresh token, and token type
     """
-    host = request.client.host if request.client else "unknown"
-    at, rt = auth_service.signin(host, dto)
+    client_ip = get_client_ip(request)
+    at, rt = auth_service.signin(client_ip, dto)
     return {
         "access_token": at,
         "refresh_token": rt,

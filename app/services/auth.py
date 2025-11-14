@@ -152,11 +152,11 @@ class AuthService(IAuthService):
 
         return user
 
-    def _create_session_and_tokens(self, user: User, host: str) -> tuple[str, str]:
+    def _create_session_and_tokens(self, user: User, client_ip: str) -> tuple[str, str]:
         """Create session and generate access and refresh tokens."""
         session = UserSession(
             user_id=user.id,
-            host=host,
+            host=client_ip,
             expires_at=datetime.datetime.now(datetime.UTC),
         )
         session = self.session_repository.create(session)
@@ -172,7 +172,7 @@ class AuthService(IAuthService):
 
         return access_token, refresh_token
 
-    def signup(self, host: str, dto: SignupDTO) -> tuple[User, str, str]:
+    def signup(self, client_ip: str, dto: SignupDTO) -> tuple[User, str, str]:
         """Register a new user."""
         hashed_password = self.auth_repository.hash_password(dto.password)
 
@@ -186,11 +186,11 @@ class AuthService(IAuthService):
                 detail="User with this email already exists",
             ) from exc
 
-        access_token, refresh_token = self._create_session_and_tokens(user, host)
+        access_token, refresh_token = self._create_session_and_tokens(user, client_ip)
 
         return user, access_token, refresh_token
 
-    def signin(self, host: str, dto: SigninDTO) -> tuple[str, str]:
+    def signin(self, client_ip: str, dto: SigninDTO) -> tuple[str, str]:
         """Authenticate a user and return JWT access token and refresh token."""
         user = self.user_repository.get_by_email(dto.email)
 
@@ -200,7 +200,7 @@ class AuthService(IAuthService):
                 detail="Invalid email or password",
             )
 
-        return self._create_session_and_tokens(user, host)
+        return self._create_session_and_tokens(user, client_ip)
 
     def authorize(self, token: str) -> JwtTokenPayload:
         """Authorize a user by token."""
