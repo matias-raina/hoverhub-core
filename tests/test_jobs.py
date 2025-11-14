@@ -115,16 +115,192 @@ class TestCreateJob:
             "budget": 1000.0,
             "location": "Test Location",
             "start_date": str(date.today() + timedelta(days=7)),
-            "end_date": str(date.today() + timedelta(days=1)),  # Before start_date
+            # Before start_date
+            "end_date": str(date.today() + timedelta(days=1)),
         }
 
         response = client.post("/jobs/", json=job_data, headers=headers)
-        # FutureDate only validates that dates are in the future, not that end_date > start_date
-        # The API currently allows this, so we accept either success or validation error
-        assert response.status_code in [
-            status.HTTP_201_CREATED,  # Currently allowed
-            status.HTTP_422_UNPROCESSABLE_CONTENT,  # If validation is added
-        ]
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert "End date must be on or after start date" in response.json()["detail"]
+
+    def test_create_job_negative_budget(self, client, db_session):
+        """Test creating a job with negative budget"""
+        user = create_test_user(db_session)
+        account = create_test_account(db_session, user.id)
+
+        # Signin to get a token
+        signin_response = client.post(
+            "/auth/signin",
+            json={"email": user.email, "password": "testpassword123"},
+        )
+        token = signin_response.json()["access_token"]
+        headers = get_account_headers(token, account.id)
+
+        job_data = {
+            "title": "Negative Budget Job",
+            "description": "Test description",
+            "budget": -1000.0,
+            "location": "Test Location",
+            "start_date": str(date.today() + timedelta(days=1)),
+            "end_date": str(date.today() + timedelta(days=7)),
+        }
+
+        response = client.post("/jobs/", json=job_data, headers=headers)
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert "Budget must be greater than 0" in response.json()["detail"]
+
+    def test_create_job_zero_budget(self, client, db_session):
+        """Test creating a job with zero budget"""
+        user = create_test_user(db_session)
+        account = create_test_account(db_session, user.id)
+
+        # Signin to get a token
+        signin_response = client.post(
+            "/auth/signin",
+            json={"email": user.email, "password": "testpassword123"},
+        )
+        token = signin_response.json()["access_token"]
+        headers = get_account_headers(token, account.id)
+
+        job_data = {
+            "title": "Zero Budget Job",
+            "description": "Test description",
+            "budget": 0.0,
+            "location": "Test Location",
+            "start_date": str(date.today() + timedelta(days=1)),
+            "end_date": str(date.today() + timedelta(days=7)),
+        }
+
+        response = client.post("/jobs/", json=job_data, headers=headers)
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert "Budget must be greater than 0" in response.json()["detail"]
+
+    def test_create_job_past_start_date(self, client, db_session):
+        """Test creating a job with start_date in the past"""
+        user = create_test_user(db_session)
+        account = create_test_account(db_session, user.id)
+
+        # Signin to get a token
+        signin_response = client.post(
+            "/auth/signin",
+            json={"email": user.email, "password": "testpassword123"},
+        )
+        token = signin_response.json()["access_token"]
+        headers = get_account_headers(token, account.id)
+
+        job_data = {
+            "title": "Past Date Job",
+            "description": "Test description",
+            "budget": 1000.0,
+            "location": "Test Location",
+            "start_date": str(date.today() - timedelta(days=1)),  # Yesterday
+            "end_date": str(date.today() + timedelta(days=7)),
+        }
+
+        response = client.post("/jobs/", json=job_data, headers=headers)
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert "Date cannot be in the past" in response.json()["detail"]
+
+    def test_create_job_past_end_date(self, client, db_session):
+        """Test creating a job with end_date in the past"""
+        user = create_test_user(db_session)
+        account = create_test_account(db_session, user.id)
+
+        # Signin to get a token
+        signin_response = client.post(
+            "/auth/signin",
+            json={"email": user.email, "password": "testpassword123"},
+        )
+        token = signin_response.json()["access_token"]
+        headers = get_account_headers(token, account.id)
+
+        job_data = {
+            "title": "Past End Date Job",
+            "description": "Test description",
+            "budget": 1000.0,
+            "location": "Test Location",
+            "start_date": str(date.today() + timedelta(days=1)),
+            "end_date": str(date.today() - timedelta(days=1)),  # Yesterday
+        }
+
+        response = client.post("/jobs/", json=job_data, headers=headers)
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert "Date cannot be in the past" in response.json()["detail"]
+
+    def test_create_job_title_too_short(self, client, db_session):
+        """Test creating a job with title less than 5 characters"""
+        user = create_test_user(db_session)
+        account = create_test_account(db_session, user.id)
+
+        # Signin to get a token
+        signin_response = client.post(
+            "/auth/signin",
+            json={"email": user.email, "password": "testpassword123"},
+        )
+        token = signin_response.json()["access_token"]
+        headers = get_account_headers(token, account.id)
+
+        job_data = {
+            "title": "Job",  # Only 3 characters
+            "description": "Test description",
+            "budget": 1000.0,
+            "location": "Test Location",
+            "start_date": str(date.today() + timedelta(days=1)),
+            "end_date": str(date.today() + timedelta(days=7)),
+        }
+
+        response = client.post("/jobs/", json=job_data, headers=headers)
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
+
+    def test_create_job_description_too_short(self, client, db_session):
+        """Test creating a job with description less than 10 characters"""
+        user = create_test_user(db_session)
+        account = create_test_account(db_session, user.id)
+
+        # Signin to get a token
+        signin_response = client.post(
+            "/auth/signin",
+            json={"email": user.email, "password": "testpassword123"},
+        )
+        token = signin_response.json()["access_token"]
+        headers = get_account_headers(token, account.id)
+
+        job_data = {
+            "title": "Valid Title",
+            "description": "Short",  # Only 5 characters
+            "budget": 1000.0,
+            "location": "Test Location",
+            "start_date": str(date.today() + timedelta(days=1)),
+            "end_date": str(date.today() + timedelta(days=7)),
+        }
+
+        response = client.post("/jobs/", json=job_data, headers=headers)
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
+
+    def test_create_job_empty_location(self, client, db_session):
+        """Test creating a job with empty location"""
+        user = create_test_user(db_session)
+        account = create_test_account(db_session, user.id)
+
+        # Signin to get a token
+        signin_response = client.post(
+            "/auth/signin",
+            json={"email": user.email, "password": "testpassword123"},
+        )
+        token = signin_response.json()["access_token"]
+        headers = get_account_headers(token, account.id)
+
+        job_data = {
+            "title": "Valid Title",
+            "description": "Valid description",
+            "budget": 1000.0,
+            "location": "",  # Empty string
+            "start_date": str(date.today() + timedelta(days=1)),
+            "end_date": str(date.today() + timedelta(days=7)),
+        }
+
+        response = client.post("/jobs/", json=job_data, headers=headers)
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
 class TestGetJob:
@@ -504,6 +680,167 @@ class TestUpdateJob:
         update_data = {"title": "Unauthorized Update"}
         response = client.put(f"/jobs/{job.id}", json=update_data, headers=headers)
         assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    def test_update_job_negative_budget(self, client, db_session):
+        """Test updating a job with negative budget"""
+        user = create_test_user(db_session)
+        account = create_test_account(db_session, user.id)
+        job = create_test_job(db_session, account.id)
+
+        # Signin to get a token
+        signin_response = client.post(
+            "/auth/signin",
+            json={"email": user.email, "password": "testpassword123"},
+        )
+        token = signin_response.json()["access_token"]
+        headers = get_account_headers(token, account.id)
+
+        update_data = {"budget": -500.0}
+
+        response = client.put(f"/jobs/{job.id}", json=update_data, headers=headers)
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert "Budget must be greater than 0" in response.json()["detail"]
+
+    def test_update_job_zero_budget(self, client, db_session):
+        """Test updating a job with zero budget"""
+        user = create_test_user(db_session)
+        account = create_test_account(db_session, user.id)
+        job = create_test_job(db_session, account.id)
+
+        # Signin to get a token
+        signin_response = client.post(
+            "/auth/signin",
+            json={"email": user.email, "password": "testpassword123"},
+        )
+        token = signin_response.json()["access_token"]
+        headers = get_account_headers(token, account.id)
+
+        update_data = {"budget": 0.0}
+
+        response = client.put(f"/jobs/{job.id}", json=update_data, headers=headers)
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert "Budget must be greater than 0" in response.json()["detail"]
+
+    def test_update_job_past_start_date(self, client, db_session):
+        """Test updating a job with start_date in the past"""
+        user = create_test_user(db_session)
+        account = create_test_account(db_session, user.id)
+        job = create_test_job(db_session, account.id)
+
+        # Signin to get a token
+        signin_response = client.post(
+            "/auth/signin",
+            json={"email": user.email, "password": "testpassword123"},
+        )
+        token = signin_response.json()["access_token"]
+        headers = get_account_headers(token, account.id)
+
+        update_data = {"start_date": str(date.today() - timedelta(days=1))}
+
+        response = client.put(f"/jobs/{job.id}", json=update_data, headers=headers)
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert "Date cannot be in the past" in response.json()["detail"]
+
+    def test_update_job_past_end_date(self, client, db_session):
+        """Test updating a job with end_date in the past"""
+        user = create_test_user(db_session)
+        account = create_test_account(db_session, user.id)
+        job = create_test_job(db_session, account.id)
+
+        # Signin to get a token
+        signin_response = client.post(
+            "/auth/signin",
+            json={"email": user.email, "password": "testpassword123"},
+        )
+        token = signin_response.json()["access_token"]
+        headers = get_account_headers(token, account.id)
+
+        update_data = {"end_date": str(date.today() - timedelta(days=1))}
+
+        response = client.put(f"/jobs/{job.id}", json=update_data, headers=headers)
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert "Date cannot be in the past" in response.json()["detail"]
+
+    def test_update_job_invalid_date_range(self, client, db_session):
+        """Test updating a job with end_date before start_date"""
+        user = create_test_user(db_session)
+        account = create_test_account(db_session, user.id)
+        job = create_test_job(db_session, account.id)
+
+        # Signin to get a token
+        signin_response = client.post(
+            "/auth/signin",
+            json={"email": user.email, "password": "testpassword123"},
+        )
+        token = signin_response.json()["access_token"]
+        headers = get_account_headers(token, account.id)
+
+        update_data = {
+            "start_date": str(date.today() + timedelta(days=10)),
+            # Before start_date
+            "end_date": str(date.today() + timedelta(days=5)),
+        }
+
+        response = client.put(f"/jobs/{job.id}", json=update_data, headers=headers)
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert "End date must be on or after start date" in response.json()["detail"]
+
+    def test_update_job_title_too_short(self, client, db_session):
+        """Test updating a job with title less than 5 characters"""
+        user = create_test_user(db_session)
+        account = create_test_account(db_session, user.id)
+        job = create_test_job(db_session, account.id)
+
+        # Signin to get a token
+        signin_response = client.post(
+            "/auth/signin",
+            json={"email": user.email, "password": "testpassword123"},
+        )
+        token = signin_response.json()["access_token"]
+        headers = get_account_headers(token, account.id)
+
+        update_data = {"title": "Job"}  # Only 3 characters
+
+        response = client.put(f"/jobs/{job.id}", json=update_data, headers=headers)
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
+
+    def test_update_job_description_too_short(self, client, db_session):
+        """Test updating a job with description less than 10 characters"""
+        user = create_test_user(db_session)
+        account = create_test_account(db_session, user.id)
+        job = create_test_job(db_session, account.id)
+
+        # Signin to get a token
+        signin_response = client.post(
+            "/auth/signin",
+            json={"email": user.email, "password": "testpassword123"},
+        )
+        token = signin_response.json()["access_token"]
+        headers = get_account_headers(token, account.id)
+
+        update_data = {"description": "Short"}  # Only 5 characters
+
+        response = client.put(f"/jobs/{job.id}", json=update_data, headers=headers)
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
+
+    def test_update_job_empty_location(self, client, db_session):
+        """Test updating a job with empty location"""
+        user = create_test_user(db_session)
+        account = create_test_account(db_session, user.id)
+        job = create_test_job(db_session, account.id)
+
+        # Signin to get a token
+        signin_response = client.post(
+            "/auth/signin",
+            json={"email": user.email, "password": "testpassword123"},
+        )
+        token = signin_response.json()["access_token"]
+        headers = get_account_headers(token, account.id)
+
+        update_data = {"location": ""}  # Empty string
+
+        response = client.put(f"/jobs/{job.id}", json=update_data, headers=headers)
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
 class TestDeleteJob:
